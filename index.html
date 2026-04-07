@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investo. — Unleashing your inner finance potential</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --forest: #27521d;
+      --purple: #4f1b68;
+      --cream: #e8e7bb;
+      --gold: #c8a84b;
+      --forest-dark: #1c3d14;
+      --purple-border: rgba(79,27,104,0.3);
+      --cream-dim: rgba(232,231,187,0.65);
+      --cream-faint: rgba(232,231,187,0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--forest);
+      color: var(--cream);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 48px;
+      background: rgba(39,82,29,0.96);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      border-bottom: 1px solid var(--purple-border);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .nav-logo img {
+      height: 36px;
+      width: auto;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-links a {
+      color: var(--cream-dim);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--cream); }
+
+    .nav-cta {
+      background: var(--gold) !important;
+      color: var(--forest-dark) !important;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 700 !important;
+      font-size: 13px !important;
+      transition: opacity 0.2s !important;
+    }
+
+    .nav-cta:hover { opacity: 0.88; color: var(--forest-dark) !important; }
+
+    /* ── HERO ── */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 60px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 100px 48px 90px;
+    }
+
+    .hero-left {}
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(79,27,104,0.25);
+      color: var(--cream);
+      border: 1px solid var(--purple-border);
+      border-radius: 100px;
+      padding: 7px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+    }
+
+    .hero h1 {
+      font-size: clamp(46px, 5.5vw, 76px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.0;
+      margin-bottom: 24px;
+      color: var(--cream);
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--gold);
+    }
+
+    .hero-desc {
+      font-size: 18px;
+      color: var(--cream-dim);
+      max-width: 480px;
+      line-height: 1.7;
+      margin-bottom: 40px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--gold);
+      color: var(--forest-dark);
+      padding: 15px 28px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--cream);
+      padding: 15px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      border: 1px solid rgba(232,231,187,0.2);
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .btn-ghost:hover {
+      border-color: rgba(232,231,187,0.45);
+      background: rgba(232,231,187,0.05);
+    }
+
+    .hero-note {
+      font-size: 13px;
+      color: rgba(232,231,187,0.45);
+      letter-spacing: 0.01em;
+    }
+
+    /* Hero right — visual block */
+    .hero-right {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hero-visual {
+      background: rgba(79,27,104,0.18);
+      border: 1px solid var(--purple-border);
+      border-radius: 32px;
+      padding: 48px 40px;
+      text-align: center;
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .hero-visual img {
+      width: 120px;
+      height: auto;
+      margin-bottom: 24px;
+    }
+
+    .hero-visual-title {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--cream);
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .hero-visual-sub {
+      font-size: 13px;
+      color: var(--cream-dim);
+      margin-bottom: 28px;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .hero-stat {
+      background: rgba(232,231,187,0.06);
+      border: 1px solid var(--purple-border);
+      border-radius: 14px;
+      padding: 16px 12px;
+    }
+
+    .hero-stat-num {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--gold);
+      letter-spacing: -0.02em;
+    }
+
+    .hero-stat-label {
+      font-size: 11px;
+      color: rgba(232,231,187,0.55);
+      margin-top: 2px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--purple-border), transparent);
+      margin: 0 48px;
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--purple);
+      background: rgba(79,27,104,0.2);
+      border: 1px solid var(--purple-border);
+      display: inline-block;
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: clamp(28px, 3.5vw, 44px);
+      font-weight: 900;
+      letter-spacing: -0.025em;
+      color: var(--cream);
+      line-height: 1.1;
+    }
+
+    .section-title em {
+      font-style: normal;
+      color: var(--gold);
+    }
+
+    /* ── FEATURES ── */
+    .features {
+      padding: 100px 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .features-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: rgba(232,231,187,0.04);
+      border: 1px solid var(--purple-border);
+      border-radius: 22px;
+      padding: 34px 30px;
+      transition: border-color 0.25s, background 0.25s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(79,27,104,0.65);
+      background: rgba(232,231,187,0.07);
+    }
+
+    .feature-icon-wrap {
+      width: 48px;
+      height: 48px;
+      background: rgba(79,27,104,0.25);
+      border: 1px solid var(--purple-border);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      color: var(--gold);
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .feature-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    .feature-card p {
+      font-size: 14px;
+      color: var(--cream-dim);
+      line-height: 1.65;
+    }
+
+    /* ── PRICING ── */
+    .pricing-section {
+      padding: 100px 48px;
+      border-top: 1px solid var(--purple-border);
+      border-bottom: 1px solid var(--purple-border);
+      background: rgba(79,27,104,0.06);
+    }
+
+    .pricing-inner {
+      max-width: 520px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .pricing-card {
+      background: rgba(232,231,187,0.05);
+      border: 1px solid var(--purple-border);
+      border-radius: 28px;
+      padding: 44px 40px;
+      margin-top: 44px;
+      position: relative;
+    }
+
+    .pricing-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 28px;
+      border: 1px solid rgba(200,168,75,0.35);
+      pointer-events: none;
+    }
+
+    .pricing-badge {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--forest-dark);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 22px;
+    }
+
+    .pricing-price {
+      font-size: 64px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      color: var(--cream);
+      line-height: 1;
+    }
+
+    .pricing-price span {
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--cream-dim);
+      letter-spacing: 0;
+    }
+
+    .pricing-trial {
+      font-size: 14px;
+      color: var(--gold);
+      font-weight: 600;
+      margin: 12px 0 28px;
+    }
+
+    .pricing-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 32px;
+      border-top: 1px solid var(--purple-border);
+      padding-top: 24px;
+    }
+
+    .pricing-features li {
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(79,27,104,0.15);
+      font-size: 15px;
+      color: var(--cream-dim);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pricing-features li::before {
+      content: '';
+      width: 18px;
+      height: 18px;
+      background: rgba(200,168,75,0.2);
+      border: 1px solid rgba(200,168,75,0.5);
+      border-radius: 50%;
+      flex-shrink: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 6l3 3 5-5' stroke='%23c8a84b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-size: 12px;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .free-note {
+      font-size: 14px;
+      color: rgba(232,231,187,0.45);
+      margin-top: 18px;
+      line-height: 1.6;
+    }
+
+    .free-note a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    /* ── WHO ── */
+    .who {
+      padding: 100px 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .who-header {
+      margin-bottom: 56px;
+    }
+
+    .who-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .who-card {
+      background: rgba(232,231,187,0.04);
+      border: 1px solid var(--purple-border);
+      border-radius: 20px;
+      padding: 28px 24px;
+      transition: border-color 0.2s;
+    }
+
+    .who-card:hover { border-color: rgba(79,27,104,0.6); }
+
+    .who-age {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .who-card h3 {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--cream);
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    .who-card p {
+      font-size: 13px;
+      color: var(--cream-dim);
+      line-height: 1.6;
+    }
+
+    /* ── CTA STRIP ── */
+    .cta-strip {
+      background: rgba(79,27,104,0.15);
+      border-top: 1px solid var(--purple-border);
+      border-bottom: 1px solid var(--purple-border);
+      padding: 80px 48px;
+      text-align: center;
+    }
+
+    .cta-strip h2 {
+      font-size: clamp(28px, 3vw, 42px);
+      font-weight: 900;
+      letter-spacing: -0.025em;
+      color: var(--cream);
+      margin-bottom: 12px;
+    }
+
+    .cta-strip p {
+      font-size: 16px;
+      color: var(--cream-dim);
+      margin-bottom: 32px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 48px;
+      border-top: 1px solid var(--purple-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .footer-logo img {
+      height: 32px;
+      width: auto;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 28px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .footer-links a {
+      color: rgba(232,231,187,0.45);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--cream); }
+
+    .footer-copy {
+      font-size: 12px;
+      color: rgba(232,231,187,0.3);
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 960px) {
+      nav { padding: 14px 24px; }
+      .nav-links { gap: 20px; }
+      .hero { grid-template-columns: 1fr; padding: 60px 24px 60px; gap: 48px; }
+      .hero-right { order: -1; }
+      .hero-visual { max-width: 100%; }
+      .features { padding: 72px 24px; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .who-grid { grid-template-columns: 1fr 1fr; }
+      .pricing-section { padding: 72px 24px; }
+      .who { padding: 72px 24px; }
+      .cta-strip { padding: 60px 24px; }
+      footer { padding: 36px 24px; }
+      .divider { margin: 0 24px; }
+    }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      nav { padding: 14px 20px; }
+      .hero { padding: 48px 20px 48px; }
+      .features { padding: 60px 20px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .who-grid { grid-template-columns: 1fr; }
+      .who { padding: 60px 20px; }
+      .pricing-section { padding: 60px 20px; }
+      .pricing-card { padding: 32px 24px; }
+      .cta-strip { padding: 48px 20px; }
+      footer { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <img src="InvestoLogo.png" alt="Investo." />
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="support.html">Support</a>
+    <a href="privacy.html">Privacy</a>
+    <span class="nav-cta" style="cursor:default; opacity:0.75;">Coming Soon</span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Now on the App Store
+    </div>
+    <h1>Unleash your inner<br/><em>finance potential.</em></h1>
+    <p class="hero-desc">The financial education app built for teens and young adults. Learn budgeting, investing, credit, and more — through lessons, flashcards, and real challenges.</p>
+    <div class="hero-buttons">
+      <span class="btn-primary" style="cursor:default; opacity:0.75;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        Coming Soon on App Store
+      </span>
+      <a href="#features" class="btn-ghost">
+        Learn more
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+    <p class="hero-note">Free to download &nbsp;&middot;&nbsp; 7-day free trial &nbsp;&middot;&nbsp; $9.99/month</p>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-visual">
+      <img src="InvestoLogo.png" alt="Investo mascot" />
+      <div class="hero-visual-title">investo.</div>
+      <div class="hero-visual-sub">Your financial education companion</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="features-header">
+    <div class="section-eyebrow">What&rsquo;s Inside</div>
+    <h2 class="section-title">Everything you need to<br/><em>master money</em></h2>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </div>
+      <h3>Structured Lessons</h3>
+      <p>18+ bite-sized lessons covering budgeting, credit, investing, taxes, debt, and more. Written for real life, not a textbook.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+      </div>
+      <h3>Flashcard Decks</h3>
+      <p>60+ cards across 11 topics with spaced repetition. Swipe to learn, flip to reveal — master finance terms fast.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <h3>Course Map</h3>
+      <p>See your full learning journey at a glance. Track progress across 12 units from Budgeting Basics to Crypto &amp; Digital Assets.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      </div>
+      <h3>AI Financial Advisor</h3>
+      <p>Ask Mr. Investo anything about money. Get personalized guidance based on your progress, age, and financial questions.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <h3>Daily Challenges</h3>
+      <p>Earn XP, level up, and keep your streak alive with daily finance challenges designed to build real habits.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <h3>Financial Glossary</h3>
+      <p>65+ finance terms explained in plain English. Search any term and get a clear definition with real-world examples.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div class="pricing-inner">
+    <div class="section-eyebrow">Pricing</div>
+    <h2 class="section-title">Simple, <em>honest</em> pricing</h2>
+    <div class="pricing-card">
+      <div class="pricing-badge">PREMIUM</div>
+      <div class="pricing-price">$9.99<span>/mo</span></div>
+      <div class="pricing-trial">7-day free trial — no charge until trial ends</div>
+      <ul class="pricing-features">
+        <li>Unlimited daily lessons</li>
+        <li>All 11 flashcard topic decks</li>
+        <li>Full 12-unit Course Map</li>
+        <li>Unlimited AI chat messages</li>
+        <li>2&times; XP multiplier</li>
+        <li>Finance Wrapped year-in-review</li>
+        <li>Leaderboard XP boosts</li>
+      </ul>
+      <span class="btn-primary" style="width:100%; justify-content:center; font-size:15px; cursor:default; opacity:0.75;">Coming Soon</span>
+    </div>
+    <p class="free-note">Also available free — 3 lessons/day, 4 flashcard topics, unlimited glossary access.</p>
+    <p class="free-note" style="margin-top:8px">Schools &amp; districts: <a href="mailto:sasikumark@bentonvillek12.org">contact us</a> for institutional licensing.</p>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="who" id="who">
+  <div class="who-header">
+    <div class="section-eyebrow">Who It&rsquo;s For</div>
+    <h2 class="section-title">Built for every stage of<br/><em>your financial life</em></h2>
+  </div>
+  <div class="who-grid">
+    <div class="who-card">
+      <div class="who-age">Ages 8&ndash;12</div>
+      <h3>Kids</h3>
+      <p>Learn money basics through simple gamified lessons. Practice saving, spending limits, and goal setting.</p>
+    </div>
+    <div class="who-card">
+      <div class="who-age">Ages 13&ndash;17</div>
+      <h3>Teens</h3>
+      <p>Prepare for financial independence. Learn budgeting, credit, investing fundamentals, and spending management.</p>
+    </div>
+    <div class="who-card">
+      <div class="who-age">Ages 18&ndash;24</div>
+      <h3>Young Adults</h3>
+      <p>Navigate rent, taxes, credit building, and student loans. Build confidence before entering the real financial world.</p>
+    </div>
+    <div class="who-card">
+      <div class="who-age">Parents &amp; Schools</div>
+      <h3>Adults</h3>
+      <p>Sign up your kids, monitor progress, and ensure they're building the financial habits that will last a lifetime.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-strip">
+  <h2>Ready to take control of your finances?</h2>
+  <p>Join thousands of young learners building real money skills.</p>
+  <span class="btn-primary" style="font-size:16px; padding:16px 32px; cursor:default; opacity:0.75;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+    Coming Soon on App Store
+  </span>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="index.html" class="footer-logo">
+    <img src="InvestoLogo.png" alt="Investo." />
+  </a>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="support.html">Support</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="mailto:sasikumark@bentonvillek12.org">Contact</a>
+  </div>
+  <p class="footer-copy">&copy; 2026 Bruxel Academy LLC. All rights reserved.</p>
+</footer>
+
+</body>
+</html>
