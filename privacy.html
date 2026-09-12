@@ -292,7 +292,7 @@
 <div class="page-header">
   <div class="page-eyebrow">Legal</div>
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: April 7, 2026</p>
+  <p class="updated">Last updated: September 12, 2026</p>
 </div>
 
 <!-- CONTENT -->
@@ -312,7 +312,7 @@
       <li><strong>Profile data:</strong> Username, XP points, level, completed lessons, and learning progress</li>
       <li><strong>Usage data:</strong> Lessons viewed, quiz results, flashcard sessions, streak data, and in-app activity</li>
       <li><strong>Device information:</strong> Device type, operating system version, and app version for diagnostics</li>
-      <li><strong>Purchase information:</strong> Subscription status (we do not store your payment details — all billing is handled by Apple)</li>
+      <li><strong>Parental consent records (accounts under 13 only):</strong> a parent or guardian's email address, the timestamp they approved the account, and the consent request itself — kept only as long as needed to document that approval</li>
     </ul>
   </div>
 
@@ -333,16 +333,19 @@
     <h2 data-num="03">Third-Party Services</h2>
     <p>We use the following trusted third-party services to operate the App:</p>
     <ul>
-      <li><strong>Firebase (Google LLC):</strong> Authentication, cloud database (Firestore), and analytics. Firebase processes data on our behalf under Google&rsquo;s data processing terms. Learn more at <a href="https://firebase.google.com/support/privacy" target="_blank">firebase.google.com/support/privacy</a></li>
-      <li><strong>Apple StoreKit:</strong> All subscription payments are processed by Apple. We never receive or store your credit card or payment information.</li>
-      <li><strong>OpenAI:</strong> The AI chat feature sends your questions to OpenAI&rsquo;s API to generate responses. We do not send personally identifiable information with these requests.</li>
+      <li><strong>Firebase (Google LLC):</strong> Authentication, cloud database (Firestore), photo storage (Cloud Storage), and analytics. Firebase processes data on our behalf under Google&rsquo;s data processing terms. Learn more at <a href="https://firebase.google.com/support/privacy" target="_blank">firebase.google.com/support/privacy</a></li>
+      <li><strong>Google Gemini API:</strong> The AI chat feature (&ldquo;Mr. Investo&rdquo;) sends your questions to Google&rsquo;s Gemini API to generate a response. We do not send your name or other identifying details with these requests.</li>
+      <li><strong>Groq:</strong> Used as an automatic backup for the AI chat feature if Gemini is temporarily unavailable, under the same data-handling practice as above.</li>
+      <li><strong>Resend:</strong> Used only to deliver the parental-consent email for accounts under 13 — it never sees the child&rsquo;s learning data, only the parent&rsquo;s email address for that one message.</li>
     </ul>
   </div>
 
   <div class="policy-section">
     <h2 data-num="04">Children&rsquo;s Privacy</h2>
-    <p>Investo is designed for users ages 8 and older. We take children&rsquo;s privacy seriously. If a user is under 13, we require parental consent and encourage parents to supervise their child&rsquo;s use of the App. We do not knowingly collect personal information from children under 13 without verifiable parental consent.</p>
-    <p>If you believe we have inadvertently collected information from a child under 13 without consent, please contact us immediately at <a href="mailto:sasikumark@bentonvillek12.org">sasikumark@bentonvillek12.org</a> and we will delete it promptly.</p>
+    <p>Investo is designed for users ages 8 and older, and we comply with the Children&rsquo;s Online Privacy Protection Act (COPPA) for users under 13.</p>
+    <p>Before we ever collect an under-13 user&rsquo;s email or any other personal information, our app asks for age first. If someone identifies as under 13, we do not create an account or collect anything about them until a parent or guardian has verifiably consented: we email the parent a description of exactly what will be collected (name, age, learning activity, and that AI-tutor chat messages are sent to Google&rsquo;s Gemini API) and a link they must actively click to approve — not just receive. Only after that click does account creation proceed.</p>
+    <p>A parent or guardian can, at any time, ask us to show them what we&rsquo;ve collected about their child, have it deleted, or revoke consent entirely (which deletes the account) — contact <a href="mailto:sasikumark@bentonvillek12.org">sasikumark@bentonvillek12.org</a>. If a consent request isn&rsquo;t approved within 7 days, the request and any information collected for it are automatically deleted and no account is created.</p>
+    <p>If you believe we have inadvertently collected information from a child under 13 without consent, contact us immediately at the address above and we will delete it promptly.</p>
   </div>
 
   <div class="policy-section">
@@ -368,17 +371,12 @@
   </div>
 
   <div class="policy-section">
-    <h2 data-num="08">Subscriptions &amp; Billing</h2>
-    <p>Investo offers a free tier and an optional Investo Premium subscription at $9.99/month. All billing is handled entirely by Apple through the App Store. We never process or store your payment information. To manage or cancel your subscription, go to <strong>Settings &rarr; Apple ID &rarr; Subscriptions</strong> on your iPhone.</p>
-  </div>
-
-  <div class="policy-section">
-    <h2 data-num="09">Changes to This Policy</h2>
+    <h2 data-num="08">Changes to This Policy</h2>
     <p>We may update this Privacy Policy from time to time. We will notify you of significant changes by updating the &ldquo;Last updated&rdquo; date at the top of this page. Continued use of the App after changes constitutes acceptance of the updated policy.</p>
   </div>
 
   <div class="policy-section">
-    <h2 data-num="10">Contact Us</h2>
+    <h2 data-num="09">Contact Us</h2>
     <p>If you have any questions about this Privacy Policy, please contact us:</p>
     <ul>
       <li><strong>Email:</strong> <a href="mailto:sasikumark@bentonvillek12.org">sasikumark@bentonvillek12.org</a></li>
