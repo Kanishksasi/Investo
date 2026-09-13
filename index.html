@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>investo. — Money Skills. Built Early. Built Right.</title>
+    <meta name="description" content="The financial education app built for ages 8 to 18. Bite-sized lessons, a virtual bank, daily challenges, and an AI coach. Free on the App Store.">
+    <meta name="theme-color" content="#080E07">
+    <link rel="icon" type="image/png" href="apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <!-- Open Graph / social share previews -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="investo. — Money Skills. Built Early. Built Right.">
+    <meta property="og:description" content="The financial education app built for ages 8 to 18. Bite-sized lessons, a virtual bank, daily challenges, and an AI coach. Free on the App Store.">
+    <meta property="og:image" content="https://investo-finance.netlify.app/og-image.png">
+    <meta property="og:url" content="https://investo-finance.netlify.app">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="investo. — Money Skills. Built Early. Built Right.">
+    <meta name="twitter:description" content="The financial education app built for ages 8 to 18. Bite-sized lessons, a virtual bank, daily challenges, and an AI coach. Free on the App Store.">
+    <meta name="twitter:image" content="https://investo-finance.netlify.app/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Prime the first frame + the diagram/CTA end-frames so the beat sequence has zero pop-in -->
+    <link rel="preload" as="image" href="frames-webp/001.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="frames-webp/120.webp">
+</head>
+<body>
+
+    <!-- Noise grain overlay -->
+    <div class="noise-overlay" aria-hidden="true"></div>
+
+    <!-- Global radial gradient bloom -->
+    <div class="gradient-bloom" aria-hidden="true"></div>
+
+    <!-- ========== NAVIGATION ========== -->
+    <nav class="nav" id="main-nav">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo" id="nav-logo">
+                <img src="InvestoLogo.png" alt="investo." class="nav-logo-img">
+            </a>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#who" class="nav-link">Who It's For</a>
+                <a href="#pricing" class="nav-link">Pricing</a>
+                <a href="support.html" class="nav-link">Support</a>
+            </div>
+            <div class="nav-right">
+                <div class="nav-social">
+                    <a href="https://www.instagram.com/investo.team/" target="_blank" rel="noopener noreferrer" class="nav-social-link" aria-label="investo. on Instagram">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none"/></svg>
+                    </a>
+                    <a href="https://www.linkedin.com/company/investo-finance/" target="_blank" rel="noopener noreferrer" class="nav-social-link" aria-label="investo. on LinkedIn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 4.5h15v15h-15z" opacity="0"/><rect x="2.5" y="2.5" width="19" height="19" rx="3.5"/><path d="M7.5 10.5v6.5M7.5 7.7v.01M11.5 17v-3.7c0-1.4.9-2.3 2.1-2.3 1.2 0 1.9.9 1.9 2.3V17" stroke-linecap="round"/></svg>
+                    </a>
+                </div>
+                <a href="https://apps.apple.com/us/app/investo-finance-ed/id6761702116" target="_blank" class="nav-cta" id="nav-cta-btn">Download on App Store</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== SCROLL CONTAINER ========== -->
+    <main class="scroll-container" id="scroll-container">
+
+        <!-- ===== CANVAS SCROLL SECTION (sticky) ===== -->
+        <section class="canvas-section" id="canvas-section">
+            <div class="canvas-sticky" id="canvas-sticky">
+                <canvas id="frame-canvas"></canvas>
+
+                <!-- BEAT 1: Hero / Assembled -->
+                <div class="copy-overlay copy-hero" id="copy-hero">
+                    <div class="copy-hero-inner">
+                        <div class="eyebrow-pill">
+                            <span class="eyebrow-dot"></span>
+                            <span>Available on the App Store &middot; 5.0 ★</span>
+                        </div>
+                        <h1 class="display-heading" id="hero-heading">
+                            Unleash your inner<br>
+                            <span class="gold">finance potential.</span>
+                        </h1>
+                        <p class="hero-sub">The financial education app built for ages 8–18. Learn budgeting, investing, credit, and more — through lessons, flashcards, and real challenges.</p>
+                        <div class="scroll-cue" id="scroll-cue">
+                            <div class="scroll-cue-line">
+                                <div class="scroll-cue-dot"></div>
+                            </div>
+                            <span>Scroll to explore</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BEAT 2: Explode begins -->
+                <div class="copy-overlay copy-explode" id="copy-explode">
+                    <p class="section-tagline">
+                        Every feature, engineered for the way<br>
+                        young people <span class="gold">actually learn.</span>
+                    </p>
+                </div>
+
+                <!-- BEAT 3: Full diagram — feature labels -->
+                <div class="copy-overlay copy-diagram" id="copy-diagram">
+                    <div class="diagram-grid">
+                        <!-- Left column -->
+                        <div class="diagram-col diagram-col-left">
+                            <div class="diagram-node" data-delay="0">
+                                <div class="diagram-node-inner">
+                                    <span class="diagram-label">Structured Lessons</span>
+                                    <span class="diagram-desc">18+ bite-sized lessons on budgeting, credit, investing, taxes, debt & more.</span>
+                                </div>
+                                <div class="diagram-connector"></div>
+                                <div class="diagram-dot"></div>
+                            </div>
+                            <div class="diagram-node" data-delay="1">
+                                <div class="diagram-node-inner">
+                                    <span class="diagram-label">Flashcard Decks</span>
+                                    <span class="diagram-desc">60+ cards across 11 topics with spaced repetition. Master finance terms fast.</span>
+                                </div>
+                                <div class="diagram-connector"></div>
+                                <div class="diagram-dot"></div>
+                            </div>
+                            <div class="diagram-node" data-delay="2">
+                                <div class="diagram-node-inner">
+                                    <span class="diagram-label">Daily Challenges</span>
+                                    <span class="diagram-desc">Earn XP, level up, and keep your streak alive with daily finance challenges.</span>
+                                </div>
+                                <div class="diagram-connector"></div>
+                                <div class="diagram-dot"></div>
+                            </div>
+                        </div>
+                        <!-- Right column -->
+                        <div class="diagram-col diagram-col-right">
+                            <div class="diagram-node diagram-node-right" data-delay="0.5">
+                                <div class="diagram-dot"></div>
+                                <div class="diagram-connector"></div>
+                                <div class="diagram-node-inner">
+                                    <span class="diagram-label">12-Unit Course Map</span>
+                                    <span class="diagram-desc">Track your full learning journey from Budgeting Basics to Crypto & Digital Assets.</span>
+                                </div>
+                            </div>
+                            <div class="diagram-node diagram-node-right" data-delay="1.5">
+                                <div class="diagram-dot"></div>
+                                <div class="diagram-connector"></div>
+                                <div class="diagram-node-inner">
+                                    <span class="diagram-label">Mr. Investo AI</span>
+                                    <span class="diagram-desc">Ask anything about money. Get personalized guidance based on your progress & age.</span>
+                                </div>
+                            </div>
+                            <div class="diagram-node diagram-node-right" data-delay="2.5">
+                                <div class="diagram-dot"></div>
+                                <div class="diagram-connector"></div>
+                                <div class="diagram-node-inner">
+                                    <span class="diagram-label">Financial Glossary</span>
+                                    <span class="diagram-desc">65+ finance terms explained in plain English with real-world examples.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BEAT 4: Reassemble -->
+                <div class="copy-overlay copy-reassemble" id="copy-reassemble">
+                    <h2 class="section-heading">
+                        One app.<br>
+                        <span class="gold">Infinite financial confidence.</span>
+                    </h2>
+                </div>
+
+                <!-- BEAT 5: CTA after reassemble -->
+                <div class="copy-overlay copy-final-cta" id="copy-final-cta">
+                    <div class="eyebrow-pill">
+                        <span>Download Now</span>
+                    </div>
+                    <h2 class="section-heading">
+                        Ready to take control<br>
+                        <span class="gold">of your finances?</span>
+                    </h2>
+                    <p class="cta-sub">Free to download &middot; Premium at <span class="gold">$9.99/month</span></p>
+                    <a href="https://apps.apple.com/us/app/investo-finance-ed/id6761702116" target="_blank" class="btn-gold" id="hero-cta-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                        <span>Download on App Store</span>
+                    </a>
+                    <p class="ios-requirement-note">Requires iOS 26.2 or later.</p>
+                </div>
+
+                <!-- Beat progress — jump to any beat, doubles as a discoverability hint for scroll nav -->
+                <div class="beat-dots" id="beat-dots" role="tablist" aria-label="Sequence progress">
+                    <button class="beat-dot" data-beat="0" role="tab" aria-label="Hero"></button>
+                    <button class="beat-dot" data-beat="1" role="tab" aria-label="Feature diagram"></button>
+                    <button class="beat-dot" data-beat="2" role="tab" aria-label="Download CTA"></button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========== TRACTION ========== -->
+        <!-- Matches slide 10 of the pitch deck exactly — keep in sync if the deck numbers change. -->
+        <section class="section section-traction" id="traction">
+            <div class="section-inner">
+                <div class="traction-row">
+                    <div class="stat-item">
+                        <div class="traction-num">52</div>
+                        <div class="stat-label">Downloads since launch</div>
+                    </div>
+                    <div class="stat-divider" aria-hidden="true"></div>
+                    <div class="stat-item">
+                        <div class="traction-num">1 in 3</div>
+                        <div class="stat-label">Have used the lessons</div>
+                    </div>
+                    <div class="stat-divider" aria-hidden="true"></div>
+                    <div class="stat-item">
+                        <div class="traction-num">5.0★</div>
+                        <div class="stat-label">Rating on the App Store</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== FEATURES SECTION ========== -->
+        <section class="section section-features" id="features">
+            <div class="section-inner">
+                <div class="eyebrow-pill"><span>What's Inside</span></div>
+                <h2 class="section-heading">
+                    Everything you need to<br>
+                    <span class="gold">master money.</span>
+                </h2>
+                <div class="stat-row">
+                    <div class="stat-item">
+                        <div class="stat-num" data-count-to="18" data-suffix="+">0</div>
+                        <div class="stat-label">Lessons</div>
+                    </div>
+                    <div class="stat-divider" aria-hidden="true"></div>
+                    <div class="stat-item">
+                        <div class="stat-num" data-count-to="65" data-suffix="+">0</div>
+                        <div class="stat-label">Glossary Terms</div>
+                    </div>
+                    <div class="stat-divider" aria-hidden="true"></div>
+                    <div class="stat-item">
+                        <div class="stat-num" data-count-to="12" data-suffix="">0</div>
+                        <div class="stat-label">Course Units</div>
+                    </div>
+                    <div class="stat-divider" aria-hidden="true"></div>
+                    <div class="stat-item">
+                        <div class="stat-num" data-count-to="60" data-suffix="+">0</div>
+                        <div class="stat-label">Flashcards</div>
+                    </div>
+                </div>
+                <div class="card-grid">
+                    <div class="card" id="card-lessons">
+                        <div class="card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C8A84B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        </div>
+                        <h3 class="card-title">Structured Lessons</h3>
+                        <p class="card-desc">18+ bite-sized lessons covering budgeting, credit, investing, taxes, debt, and more. Written for real life, not a textbook.</p>
+                    </div>
+                    <div class="card" id="card-flash">
+                        <div class="card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C8A84B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+                        </div>
+                        <h3 class="card-title">Flashcard Decks</h3>
+                        <p class="card-desc">60+ cards across 11 topics with spaced repetition. Swipe to learn, flip to reveal — master finance terms fast.</p>
+                    </div>
+                    <div class="card" id="card-course">
+                        <div class="card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C8A84B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <h3 class="card-title">Course Map</h3>
+                        <p class="card-desc">See your full learning journey at a glance. Track progress across 12 units from Budgeting Basics to Crypto &amp; Digital Assets.</p>
+                    </div>
+                    <div class="card" id="card-ai">
+                        <div class="card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C8A84B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                        </div>
+                        <h3 class="card-title">AI Financial Advisor</h3>
+                        <p class="card-desc">Ask Mr. Investo anything about money. Get personalized guidance based on your progress, age, and financial questions.</p>
+                    </div>
+                    <div class="card" id="card-xp">
+                        <div class="card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C8A84B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                        <h3 class="card-title">Daily Challenges</h3>
+                        <p class="card-desc">Earn XP, level up, and keep your streak alive with daily finance challenges designed to build real habits.</p>
+                    </div>
+                    <div class="card" id="card-glossary">
+                        <div class="card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C8A84B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        </div>
+                        <h3 class="card-title">Financial Glossary</h3>
+                        <p class="card-desc">65+ finance terms explained in plain English. Search any term and get a clear definition with real-world examples.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== TRY IT: LIVE DAILY CHALLENGE DEMO ========== -->
+        <section class="section section-demo" id="demo">
+            <div class="section-inner">
+                <div class="eyebrow-pill"><span>Try It Yourself</span></div>
+                <h2 class="section-heading">
+                    This is an actual<br>
+                    <span class="gold">Daily Challenge.</span>
+                </h2>
+                <p class="section-sub">No download needed — answer this one like you would in the app.</p>
+
+                <div class="demo-card" id="demo-card">
+                    <div class="demo-card-top">
+                        <span class="demo-tag">Daily Challenge</span>
+                        <span class="demo-xp">+35 XP if correct</span>
+                    </div>
+                    <p class="demo-question">You get $50 for your birthday. You already have a $200 emergency fund and no debt. What's the smartest first move?</p>
+                    <div class="demo-options" id="demo-options">
+                        <button class="demo-option" data-correct="false">Spend it all right away — you earned it</button>
+                        <button class="demo-option" data-correct="true">Split it: save some, spend some on something you'll actually value</button>
+                        <button class="demo-option" data-correct="false">Lend it to a friend who says they'll pay you back</button>
+                    </div>
+                    <div class="demo-feedback" id="demo-feedback" aria-live="polite"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== WHO IT'S FOR ========== -->
+        <section class="section section-who" id="who">
+            <div class="section-inner">
+                <div class="eyebrow-pill"><span>Who It's For</span></div>
+                <h2 class="section-heading">
+                    Eight to eighteen.<br>
+                    <span class="gold">Earlier than anyone else starts.</span>
+                </h2>
+                <div class="who-grid">
+                    <div class="who-card" id="who-kids">
+                        <div class="who-age">Ages 8–12</div>
+                        <h3 class="who-title">Kids</h3>
+                        <p class="who-desc">First habits around saving, spending, and waiting.</p>
+                    </div>
+                    <div class="who-card" id="who-teens">
+                        <div class="who-age">Ages 13–18</div>
+                        <h3 class="who-title">Teens</h3>
+                        <p class="who-desc">Budgeting, credit, and investing before it counts.</p>
+                    </div>
+                    <div class="who-card" id="who-parents">
+                        <div class="who-age" aria-hidden="true">&nbsp;</div>
+                        <h3 class="who-title">Parents &amp; Schools</h3>
+                        <p class="who-desc">Sign them up, then watch the habits stick.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== PRICING ========== -->
+        <section class="section section-pricing" id="pricing">
+            <div class="section-inner">
+                <div class="pricing-glow" aria-hidden="true"></div>
+                <div class="eyebrow-pill"><span>Pricing</span></div>
+                <h2 class="section-heading">
+                    Simple, <span class="gold">honest</span> pricing.
+                </h2>
+                <div class="pricing-grid">
+                    <div class="pricing-card" id="plan-free">
+                        <div class="pricing-tier">Free</div>
+                        <div class="pricing-amount">$0<span>/forever</span></div>
+                        <ul class="pricing-list">
+                            <li>3 lessons per day</li>
+                            <li>4 flashcard topic decks</li>
+                            <li>Unlimited glossary access</li>
+                            <li>Basic progress tracking</li>
+                        </ul>
+                        <a href="https://apps.apple.com/us/app/investo-finance-ed/id6761702116" target="_blank" class="btn-outline" id="btn-free">Download Free</a>
+                    </div>
+                    <div class="pricing-card pricing-card-gold" id="plan-premium">
+                        <div class="pricing-badge">Premium</div>
+                        <div class="pricing-tier">Pro</div>
+                        <div class="pricing-amount">$9.99<span>/mo</span></div>
+                        <ul class="pricing-list">
+                            <li>Unlimited daily lessons</li>
+                            <li>All 11 flashcard topic decks</li>
+                            <li>Full 12-unit Course Map</li>
+                            <li>Unlimited AI chat messages</li>
+                            <li>2× XP multiplier</li>
+                            <li>Finance Wrapped year-in-review</li>
+                            <li>Leaderboard XP boosts</li>
+                        </ul>
+                        <a href="https://apps.apple.com/us/app/investo-finance-ed/id6761702116" target="_blank" class="btn-gold btn-full" id="btn-premium">
+                            <span>Get Premium</span>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </a>
+                    </div>
+                </div>
+                <p class="pricing-note">Schools &amp; districts: <a href="mailto:investo.team@bruxelacademy.com">contact us</a> for institutional licensing.</p>
+            </div>
+        </section>
+
+        <!-- ========== FAQ ========== -->
+        <section class="section section-faq" id="faq">
+            <div class="section-inner">
+                <div class="eyebrow-pill"><span>Questions</span></div>
+                <h2 class="section-heading">
+                    Frequently asked<br>
+                    <span class="gold">questions.</span>
+                </h2>
+                <div class="faq-list">
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false">
+                            <span>Is my child's data safe?</span>
+                            <svg class="faq-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <div class="faq-answer">
+                            <p><strong>Virtual bank.</strong> Track spending and budgets in a practice account. No real money, no card, no risk. We collect the minimum data needed to run the app and never sell personal information to third parties.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false">
+                            <span>Can parents monitor their child's progress?</span>
+                            <svg class="faq-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Yes. Parents and schools can sign up to follow along with lesson completion, streaks, and course progress — see the "Who It's For" section above.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false">
+                            <span>What ages is investo. built for?</span>
+                            <svg class="faq-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <div class="faq-answer">
+                            <p>investo. is built for ages 8–18, with content that scales from simple saving/spending basics for younger kids up through budgeting, credit, and investing fundamentals for teens.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false">
+                            <span>Do I have to pay to use investo.?</span>
+                            <svg class="faq-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <div class="faq-answer">
+                            <p>No — the Free plan gives you 3 lessons a day, 4 flashcard decks, and unlimited glossary access forever. Premium ($9.99/mo) unlocks the full course map and unlimited lessons for anyone who wants to go faster.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false">
+                            <span>Can I cancel Premium anytime?</span>
+                            <svg class="faq-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Yes, anytime, directly through the App Store — no phone calls, no retention maze.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== FOOTER ========== -->
+        <footer class="footer" id="footer">
+            <div class="footer-inner">
+                <div class="footer-top">
+                    <div class="footer-brand">
+                        <a href="#" class="nav-logo">
+                            <img src="InvestoLogo.png" alt="investo." class="nav-logo-img">
+                        </a>
+                        <p class="footer-tagline">Your financial education companion.</p>
+                        <p class="footer-tagline footer-story">Built by two students who wanted the financial education they never got in school.</p>
+                        <div class="footer-social">
+                            <a href="https://www.instagram.com/investo.team/" target="_blank" rel="noopener noreferrer" class="footer-social-link" aria-label="investo. on Instagram">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none"/></svg>
+                                <span>@investo.team</span>
+                            </a>
+                            <a href="https://www.linkedin.com/company/investo-finance/" target="_blank" rel="noopener noreferrer" class="footer-social-link" aria-label="investo. on LinkedIn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="2.5" width="19" height="19" rx="3.5"/><path d="M7.5 10.5v6.5M7.5 7.7v.01M11.5 17v-3.7c0-1.4.9-2.3 2.1-2.3 1.2 0 1.9.9 1.9 2.3V17" stroke-linecap="round"/></svg>
+                                <span>investo-finance</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="footer-cols">
+                        <div class="footer-col">
+                            <h4>Product</h4>
+                            <a href="#features">Features</a>
+                            <a href="#pricing">Pricing</a>
+                            <a href="#who">Who It's For</a>
+                        </div>
+                        <div class="footer-col">
+                            <h4>Support</h4>
+                            <a href="support.html">Help Center</a>
+                            <a href="mailto:investo.team@bruxelacademy.com">Contact</a>
+                        </div>
+                        <div class="footer-col">
+                            <h4>Legal</h4>
+                            <a href="privacy.html">Privacy Policy</a>
+                        </div>
+                        <div class="footer-col footer-col-signup">
+                            <h4>Stay Updated</h4>
+                            <form name="investo-updates" method="POST" data-netlify="true" class="footer-signup-form" id="footer-signup-form">
+                                <input type="hidden" name="form-name" value="investo-updates">
+                                <input type="email" name="email" placeholder="you@email.com" required class="footer-signup-input" aria-label="Email address">
+                                <button type="submit" class="footer-signup-btn" aria-label="Sign up">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                            </form>
+                            <p class="footer-signup-note" id="footer-signup-note">New features &amp; updates. No spam.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2026 Kanishk Sasikumar &amp; Arjun Kapoor. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
