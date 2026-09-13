@@ -408,6 +408,16 @@ img { display: block; max-width: 100%; }
     letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--gold);
 }
+.diagram-platform {
+    font-style: normal; font-size: 9px; font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--cream-40);
+    border: 1px solid var(--border-card);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 4px;
+    vertical-align: middle;
+}
 .diagram-desc {
     font-size: 13px; font-weight: 400;
     color: var(--cream-60); line-height: 1.5;
@@ -440,6 +450,13 @@ img { display: block; max-width: 100%; }
     color: var(--cream-60);
     margin-top: 8px; margin-bottom: 32px;
 }
+.cta-store-buttons {
+    display: flex; align-items: center; justify-content: center;
+    gap: 16px; flex-wrap: wrap;
+}
+/* Google's official badge — sized to sit level with our own button, never recolored/restyled */
+.play-badge-link { display: inline-flex; align-items: center; line-height: 0; }
+.play-badge-img { height: 52px; width: auto; }
 
 /* ============================================
    BELOW-CANVAS SECTIONS
@@ -485,6 +502,19 @@ img { display: block; max-width: 100%; }
 }
 .card:hover::before { opacity: 1; }
 .card.in-view { opacity: 1; transform: translateY(0) scale(1); }
+
+.card-badge {
+    position: absolute; top: 18px; right: 18px; z-index: 1;
+    padding: 4px 12px;
+    background: rgba(232,231,187,0.06);
+    border: 1px solid var(--border-card);
+    color: var(--cream-40);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    border-radius: 100px;
+}
+/* 7 cards in a 3-col grid: center the lone last card instead of leaving it stranded left */
+.card-grid > .card:last-child:nth-child(3n+1) { grid-column: 2; }
 
 .card-icon { margin-bottom: 22px; position: relative; z-index: 1; }
 .card-title {
@@ -933,6 +963,7 @@ img { display: block; max-width: 100%; }
     .section-tagline { font-size: clamp(18px, 5vw, 26px); }
 
     .card-grid { grid-template-columns: 1fr; }
+    .card-grid > .card:last-child:nth-child(3n+1) { grid-column: auto; }
     .pricing-grid { grid-template-columns: 1fr; }
     .who-grid { grid-template-columns: 1fr; }
     .stat-row { gap: 20px; }

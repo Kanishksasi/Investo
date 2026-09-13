@@ -279,7 +279,7 @@
         const obs = new IntersectionObserver(entries => {
             entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); });
         }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
-        document.querySelectorAll('.card, .who-card, .pricing-card, .step, .demo-card')
+        document.querySelectorAll('.card, .who-card, .step, .demo-card')
             .forEach(el => obs.observe(el));
     }
 

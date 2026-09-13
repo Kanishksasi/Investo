@@ -294,7 +294,7 @@
 <div class="page-header">
   <div class="page-eyebrow">Legal</div>
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: April 7, 2026</p>
+  <p class="updated">Last updated: September 13, 2026</p>
 </div>
 
 <!-- CONTENT -->
@@ -310,11 +310,14 @@
     <h2 data-num="01">Information We Collect</h2>
     <p>When you create an account and use investo., we collect the following information:</p>
     <ul>
-      <li><strong>Account information:</strong> Your name, email address, and password (stored securely via Firebase Authentication)</li>
-      <li><strong>Profile data:</strong> Username, XP points, level, completed lessons, and learning progress</li>
-      <li><strong>Usage data:</strong> Lessons viewed, quiz results, flashcard sessions, streak data, and in-app activity</li>
+      <li><strong>Account information:</strong> Your name, age, email address, and password (stored securely via Firebase Authentication)</li>
+      <li><strong>Profile data:</strong> Username, avatar (a preset avatar or an optional uploaded photo, stored via Firebase Storage), XP points, level, completed lessons, and learning progress</li>
+      <li><strong>Usage data:</strong> Lessons viewed, quiz results, flashcard sessions (iOS), streak data, and in-app activity</li>
+      <li><strong>AI tutor questions:</strong> The text of questions you ask Mr. Investo, sent to Google Gemini (or Groq, only if Gemini is rate-limited) to generate a response</li>
+      <li><strong>Practice portfolio data:</strong> Your simulated trades, holdings, and returns in the practice-investing feature. This is entirely fictional — no real money, deposits, or withdrawals are ever involved</li>
+      <li><strong>Leaderboard data:</strong> Your display name and XP may be shown publicly to other users unless you turn this off in the app. Users under 13 always appear as &ldquo;Anonymous&rdquo; and cannot opt in to showing their name</li>
       <li><strong>Device information:</strong> Device type, operating system version, and app version for diagnostics</li>
-      <li><strong>Purchase information:</strong> Subscription status (we do not store your payment details — all billing is handled by Apple)</li>
+      <li><strong>Parent/guardian email (users under 13 only):</strong> Collected to deliver and confirm parental consent before an account is created &mdash; see Section 4</li>
     </ul>
   </div>
 
@@ -335,16 +338,27 @@
     <h2 data-num="03">Third-Party Services</h2>
     <p>We use the following trusted third-party services to operate the App:</p>
     <ul>
-      <li><strong>Firebase (Google LLC):</strong> Authentication, cloud database (Firestore), and analytics. Firebase processes data on our behalf under Google&rsquo;s data processing terms. Learn more at <a href="https://firebase.google.com/support/privacy" target="_blank">firebase.google.com/support/privacy</a></li>
-      <li><strong>Apple StoreKit:</strong> All subscription payments are processed by Apple. We never receive or store your credit card or payment information.</li>
-      <li><strong>OpenAI:</strong> The AI chat feature sends your questions to OpenAI&rsquo;s API to generate responses. We do not send personally identifiable information with these requests.</li>
+      <li><strong>Firebase (Google LLC):</strong> Authentication, cloud database (Firestore), file storage (avatar photos), and analytics. Firebase processes data on our behalf under Google&rsquo;s data processing terms. Learn more at <a href="https://firebase.google.com/support/privacy" target="_blank">firebase.google.com/support/privacy</a></li>
+      <li><strong>Google Gemini:</strong> The AI-tutor feature sends the text of your questions to Google&rsquo;s Gemini API to generate a response. We do not attach personally identifying information to these requests.</li>
+      <li><strong>Groq:</strong> Used as a fallback for the AI tutor only when Gemini is rate-limited, under the same conditions as above.</li>
+      <li><strong>Resend:</strong> Delivers the parental-consent email when a user under 13 signs up. Resend receives the parent or guardian&rsquo;s email address for this purpose only.</li>
+      <li><strong>Finnhub:</strong> Provides real market data (stock ticker symbols and prices) for the practice-investing feature. Finnhub receives ticker symbols only &mdash; no personal data.</li>
     </ul>
+    <p>There are no purchases anywhere in the App, so no payment processor is involved.</p>
   </div>
 
   <div class="policy-section">
     <h2 data-num="04">Children&rsquo;s Privacy</h2>
-    <p>investo. is designed for users ages 8 to 18. We take children&rsquo;s privacy seriously. If a user is under 13, we require parental consent and encourage parents to supervise their child&rsquo;s use of the App. We do not knowingly collect personal information from children under 13 without verifiable parental consent.</p>
-    <p>If you believe we have inadvertently collected information from a child under 13 without consent, please contact us immediately at <a href="mailto:investo.team@bruxelacademy.com">investo.team@bruxelacademy.com</a> and we will delete it promptly.</p>
+    <p>investo. is built for users ages 8 to 18, and is useful at any age. We take children&rsquo;s privacy seriously, and a user under 13 cannot create an account until a parent or guardian approves it. Here is exactly how that works:</p>
+    <ul>
+      <li>When a user under 13 signs up, we ask for a parent or guardian&rsquo;s email address instead of creating the account immediately.</li>
+      <li>We email that parent a notice describing exactly what is collected and why.</li>
+      <li>The account is created only after the parent clicks through and confirms.</li>
+      <li>If a consent request is not approved, it expires and is deleted after 7 days.</li>
+    </ul>
+    <p>What we collect from a child under 13: name, age, email address, learning progress, and the text of any questions asked of the AI tutor (sent to Google Gemini, or Groq as a fallback). Children under 13 always appear as &ldquo;Anonymous&rdquo; on the public leaderboard &mdash; their name is never shown to other users, and they cannot opt in to showing it.</p>
+    <p>Parents may review or delete their child&rsquo;s data, or withdraw consent, at any time by emailing <a href="mailto:investo.team@bruxelacademy.com">investo.team@bruxelacademy.com</a>. If you believe we have inadvertently collected information from a child under 13 without consent, contact us immediately at the same address and we will delete it promptly.</p>
+    <p>For users 13 and older, the app&rsquo;s leaderboard may show your display name and XP publicly to other users; you can turn this off at any time in the app&rsquo;s settings.</p>
   </div>
 
   <div class="policy-section">
@@ -370,8 +384,8 @@
   </div>
 
   <div class="policy-section">
-    <h2 data-num="08">Subscriptions &amp; Billing</h2>
-    <p>investo. offers a free tier and an optional investo. Premium subscription at $9.99/month with a 7-day free trial. All billing is handled entirely by Apple through the App Store. We never process or store your payment information. To manage or cancel your subscription, go to <strong>Settings &rarr; Apple ID &rarr; Subscriptions</strong> on your iPhone.</p>
+    <h2 data-num="08">Pricing</h2>
+    <p>investo. is completely free. There is no subscription, no in-app purchase, and no paid tier of any kind. We do not collect or process any payment information, because there is nothing to pay for.</p>
   </div>
 
   <div class="policy-section">
@@ -385,7 +399,7 @@
     <ul>
       <li><strong>Email:</strong> <a href="mailto:investo.team@bruxelacademy.com">investo.team@bruxelacademy.com</a></li>
       <li><strong>Company:</strong> Bruxel Academy LLC</li>
-      <li><strong>App:</strong> investo. &mdash; available on the App Store</li>
+      <li><strong>App:</strong> investo. &mdash; available on the App Store, with Google Play coming soon</li>
     </ul>
   </div>
 
