@@ -22,7 +22,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 
     <!-- Prime the first frame + the diagram/CTA end-frames so the beat sequence has zero pop-in -->
@@ -33,6 +33,9 @@
 
     <!-- Noise grain overlay -->
     <div class="noise-overlay" aria-hidden="true"></div>
+
+    <!-- Reading progress -->
+    <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
 
     <!-- Global radial gradient bloom -->
     <div class="gradient-bloom" aria-hidden="true"></div>
@@ -202,6 +205,18 @@
         </section>
 
 
+        <!-- ========== TOPIC TAPE ========== -->
+        <div class="tape" aria-label="Topics covered in investo.">
+            <div class="tape-track">
+                <ul class="tape-list">
+                    <li>Budgeting</li><li>Saving</li><li>Credit</li><li>Investing</li><li>Taxes</li><li>Debt</li><li>Crypto &amp; Digital Assets</li><li>$10,000 practice portfolio</li><li>71 glossary terms</li><li>Mr. Investo AI tutor</li>
+                </ul>
+                <ul class="tape-list" aria-hidden="true">
+                    <li>Budgeting</li><li>Saving</li><li>Credit</li><li>Investing</li><li>Taxes</li><li>Debt</li><li>Crypto &amp; Digital Assets</li><li>$10,000 practice portfolio</li><li>71 glossary terms</li><li>Mr. Investo AI tutor</li>
+                </ul>
+            </div>
+        </div>
+
         <!-- ========== FEATURES SECTION ========== -->
         <section class="section section-features" id="features">
             <div class="section-inner">
@@ -285,6 +300,56 @@
                         <p class="card-desc">See your full learning journey at a glance. Track progress across 12 units from Budgeting Basics to Crypto &amp; Digital Assets.</p>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- ========== PRACTICE PORTFOLIO SHOWCASE ========== -->
+        <section class="section section-portfolio" id="portfolio">
+            <div class="portfolio-inner">
+                <div class="portfolio-copy">
+                    <div class="eyebrow-pill"><span>Practice Investing</span></div>
+                    <h2 class="section-heading portfolio-heading">
+                        Ten thousand dollars.<br>
+                        <span class="gold">None of it real.</span>
+                    </h2>
+                    <p class="portfolio-lede">Every account starts with $10,000 in practice money. Buy and sell real tickers at real market prices, and find out what a dip actually feels like — long before it's your own paycheck on the line.</p>
+                    <ul class="portfolio-points">
+                        <li>Real market data</li>
+                        <li>Fictional money — nothing to deposit, nothing to withdraw</li>
+                        <li>Track your holdings and returns</li>
+                    </ul>
+                </div>
+
+                <figure class="pf-card" id="pf-card">
+                    <div class="pf-head">
+                        <span class="pf-label">Practice balance</span>
+                        <span class="pf-tag">Illustrative</span>
+                    </div>
+                    <div class="pf-value">$10,000<span>.00</span></div>
+                    <div class="pf-sub">Starting balance · practice money</div>
+                    <svg class="pf-chart" viewBox="0 0 400 150" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="pf-fill" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#C8A84B" stop-opacity="0.28"/>
+                                <stop offset="100%" stop-color="#C8A84B" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+                        <g class="pf-grid">
+                            <line x1="0" y1="37.5" x2="400" y2="37.5"/>
+                            <line x1="0" y1="75" x2="400" y2="75"/>
+                            <line x1="0" y1="112.5" x2="400" y2="112.5"/>
+                        </g>
+                        <path class="pf-area" d="M0,98 L22,92 L44,101 L66,84 L88,88 L110,70 L132,78 L154,96 L176,108 L198,90 L220,94 L242,72 L264,64 L286,76 L308,58 L330,62 L352,44 L374,50 L400,36 L400,150 L0,150 Z" fill="url(#pf-fill)"/>
+                        <path class="pf-line" pathLength="1" d="M0,98 L22,92 L44,101 L66,84 L88,88 L110,70 L132,78 L154,96 L176,108 L198,90 L220,94 L242,72 L264,64 L286,76 L308,58 L330,62 L352,44 L374,50 L400,36"/>
+                        <circle class="pf-dot" cx="400" cy="36" r="4"/>
+                    </svg>
+                    <ul class="pf-holdings">
+                        <li><span class="pf-ticker">AAPL</span><span class="pf-name">Apple</span><span class="pf-shares">12 sh</span></li>
+                        <li><span class="pf-ticker">VOO</span><span class="pf-name">S&amp;P 500 ETF</span><span class="pf-shares">4 sh</span></li>
+                        <li><span class="pf-ticker">NKE</span><span class="pf-name">Nike</span><span class="pf-shares">9 sh</span></li>
+                    </ul>
+                    <figcaption class="pf-caption">Example screen. Prices in the app are live market data — the money never is.</figcaption>
+                </figure>
             </div>
         </section>
 

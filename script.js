@@ -279,8 +279,19 @@
         const obs = new IntersectionObserver(entries => {
             entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); });
         }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
-        document.querySelectorAll('.card, .who-card, .step, .demo-card')
+        document.querySelectorAll('.card, .who-card, .step, .demo-card, .pf-card')
             .forEach(el => obs.observe(el));
+    }
+
+    // ---- Feature cards: spotlight follows the pointer ----
+    function initCardSpotlight() {
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('pointermove', e => {
+                const r = card.getBoundingClientRect();
+                card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+                card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+            });
+        });
     }
 
     // ---- Animated stat counters ----
@@ -364,11 +375,24 @@
     // ---- Nav hide on scroll down ----
     function initNav() {
         const nav = document.getElementById('main-nav');
+        const progress = document.getElementById('scroll-progress');
         let lastY = 0;
+        let progressQueued = false;
+
+        function paintProgress() {
+            progressQueued = false;
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            progress.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, window.scrollY / max) : 0) + ')';
+        }
+
         window.addEventListener('scroll', () => {
             const y = window.scrollY;
             nav.style.transform = (y > lastY && y > 120) ? 'translateY(-100%)' : 'translateY(0)';
             lastY = y;
+            if (progress && !progressQueued) {
+                progressQueued = true;
+                requestAnimationFrame(paintProgress);
+            }
         }, { passive: true });
     }
 
@@ -385,6 +409,7 @@
         initFAQ();
         initDemoQuiz();
         initBeatDots();
+        initCardSpotlight();
         updateBeatDots(0);
 
         preload().then(() => {
