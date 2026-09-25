@@ -8,7 +8,11 @@
     'use strict';
 
     // ---- Configuration ----
-    const FRAME_DIR    = './frames-webp/';
+    // Phones get a 960×540 set (~5.5MB vs ~27MB). Must match the media-conditional
+    // preloads in index.html so the preloaded frames are actually reused.
+    const FRAME_DIR    = window.matchMedia('(max-width: 820px)').matches
+        ? './frames-webp-m/'
+        : './frames-webp/';
     const FRAME_EXT    = '.webp';
     const TOTAL_FRAMES = 120;
 
