@@ -27,9 +27,6 @@
     // Top offset for the frame on portrait screens: nav height (56px) + breathing room.
     const PORTRAIT_TOP = 68;
 
-    const APP_STORE_URL = 'https://apps.apple.com/us/app/investo-finance-ed/id6761702116';
-    const PLAY_URL      = 'https://play.google.com/store/apps/details?id=com.investo.learnfinance';
-
     // The story beats: each is a resting point the sequence pauses on.
     // holdMs: how long to hold before auto-advancing (Infinity = stay).
     const BEATS = [
@@ -121,7 +118,16 @@
         canvas.style.width  = w + 'px';
         canvas.style.height = h + 'px';
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        measureHeroCopy();
         if (images[0]) drawFrame(currentFrame);
+    }
+
+    // Space available for the frame above the hero copy on portrait screens.
+    // offsetTop ignores the overlay's slide-in transform, so this is stable.
+    let portraitMaxH = 0;
+    function measureHeroCopy() {
+        const inner = document.querySelector('#copy-hero .copy-hero-inner');
+        portraitMaxH = inner ? inner.offsetTop - PORTRAIT_TOP - 4 : 0;
     }
 
     // ---- Draw — single crisp frame, no cross-fade ----
@@ -144,11 +150,17 @@
         const iw    = img.naturalWidth;
         const ih    = img.naturalHeight;
         const scale = Math.min(cw / iw, ch / ih);
-        const dw    = iw * scale, dh = ih * scale;
+        let dw      = iw * scale, dh = ih * scale;
         // Portrait screens (phones, upright tablets): the 16:9 frame is a short strip, so
         // pin it just under the nav and leave the space below for the copy, instead of
         // centering it where the headline would sit on top of the busy app mockup.
         const portrait = ch > cw * 1.05;
+        // …and if the copy is tall (or the screen short, e.g. iPhone Safari), shrink the
+        // frame to the gap above it rather than letting the two overlap.
+        if (portrait && portraitMaxH > 0 && dh > portraitMaxH) {
+            const s2 = portraitMaxH / ih;
+            dw = iw * s2; dh = ih * s2;
+        }
         const dx    = (cw - dw) / 2;
         const dy    = portrait ? Math.min((ch - dh) / 2, PORTRAIT_TOP) : (ch - dh) / 2;
 
@@ -415,27 +427,39 @@
         }, { passive: true });
     }
 
-    // ---- Nav "Get the app": straight to the visitor's own store ----
-    // Phones skip the page entirely (one tap → store). Desktop has no store to
-    // open, so it stays on #download where both buttons and requirements are.
-    function initSmartStoreLink() {
-        const btn = document.getElementById('nav-cta-btn');
-        if (!btn) return;
-        const ua = navigator.userAgent || '';
-        // iPadOS reports itself as a Mac; touch support is what gives it away.
-        const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-        const isAndroid = /Android/i.test(ua);
-        if (!isIOS && !isAndroid) return;
-        btn.href = isIOS ? APP_STORE_URL : PLAY_URL;
-        btn.target = '_blank';
-        btn.rel = 'noopener';
+    // ---- Phone download bar ----
+    // Shown once the visitor is past the hero (which has its own buttons) and
+    // hidden again while the Download section or footer — which also have
+    // buttons — is on screen, so there's never a duplicate ask in view.
+    function initGetBar() {
+        const bar = document.getElementById('get-bar');
+        const hero = document.getElementById('canvas-section');
+        if (!bar || !hero || !('IntersectionObserver' in window)) return;
+        const covering = new Set();
+        let pastHero = false;
+        const sync = () => bar.classList.toggle('show', pastHero && covering.size === 0);
+
+        new IntersectionObserver(([e]) => {
+            pastHero = !e.isIntersecting && e.boundingClientRect.top < 0;
+            sync();
+        }).observe(hero);
+
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(e => e.isIntersecting ? covering.add(e.target) : covering.delete(e.target));
+            sync();
+        });
+        ['download', 'footer'].forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
     }
 
     // ---- Init ----
     function init() {
-        initSmartStoreLink();
+        initGetBar();
         resize();
         window.addEventListener('resize', resize, { passive: true });
+        // Display font swaps in after first paint and changes the copy's height
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => { measureHeroCopy(); if (images[0]) drawFrame(currentFrame); });
+        }
 
         observeSections();
         initNav();
