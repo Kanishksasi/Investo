@@ -947,6 +947,13 @@ img { display: block; max-width: 100%; }
 .faq-answer p {
     padding: 0 24px 20px; font-size: 14px; color: var(--cream-60); line-height: 1.65;
 }
+/* Same treatment as .faq-a a on support.html */
+.faq-answer a {
+    color: var(--gold); text-decoration: none;
+    border-bottom: 1px solid rgba(200,168,75,0.3);
+    transition: border-color 0.2s;
+}
+.faq-answer a:hover { border-color: var(--gold); }
 
 /* ============================================
    FOOTER — SOCIAL + SIGNUP
