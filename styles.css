@@ -192,13 +192,16 @@ img { display: block; max-width: 100%; }
     transform: translateY(18px);
     /* GPU layer — no repaints on transition */
     will-change: opacity, transform;
-    transition: opacity 0.55s var(--ease-soft),
-                transform 0.55s var(--ease-soft);
+    /* Leaving is quick… */
+    transition: opacity 0.22s ease, transform 0.22s ease;
 }
 .copy-overlay.visible {
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
+    /* …and arriving waits for it, so two captions are never on screen at once */
+    transition: opacity 0.55s var(--ease-soft) 0.2s,
+                transform 0.55s var(--ease-soft) 0.2s;
 }
 
 /* ---------- Eyebrow Pill ---------- */
@@ -263,18 +266,30 @@ img { display: block; max-width: 100%; }
 .copy-hero {
     justify-content: flex-end;
     padding-bottom: 0;
-    background: linear-gradient(
-        to top,
-        rgba(8,14,7,0.97) 0%,
-        rgba(8,14,7,0.75) 25%,
-        rgba(8,14,7,0.2)  55%,
-        transparent 75%
-    );
+    /* Landscape: the copy sits over the mockup, so it needs a real scrim behind it —
+       a bottom fade plus a soft pool of dark right where the paragraph lands. */
+    background:
+        radial-gradient(ellipse 40% 42% at 50% 60%, rgba(8,14,7,0.92) 20%, rgba(8,14,7,0.6) 60%, transparent 100%),
+        linear-gradient(
+            to top,
+            rgba(8,14,7,0.98) 0%,
+            rgba(8,14,7,0.9)  24%,
+            rgba(8,14,7,0.55) 46%,
+            rgba(8,14,7,0.12) 66%,
+            transparent 80%
+        );
 }
 .copy-hero-inner {
     display: flex; flex-direction: column; align-items: center;
-    padding: 48px 48px 40px;
+    /* Bottom padding clears the beat dots (bottom: 36px) */
+    padding: 48px 48px 78px;
     max-width: 980px; width: 100%;
+}
+@media (max-aspect-ratio: 20/21) {
+    /* Portrait: frame is pinned above the copy (script.js), so a light fade is enough */
+    .copy-hero {
+        background: linear-gradient(to top, rgba(8,14,7,0.96) 0%, rgba(8,14,7,0.85) 45%, transparent 68%);
+    }
 }
 .hero-sub {
     font-size: 17px; font-weight: 500;
@@ -458,20 +473,70 @@ img { display: block; max-width: 100%; }
     color: var(--cream-60);
     margin-top: 8px; margin-bottom: 32px;
 }
-.cta-store-buttons {
+/* ---------- Store buttons — one matched pair, used everywhere ----------
+   Both platforms get the same weight: same size, same surface, each with its
+   own store mark. (The official badge images ship with mismatched built-in
+   padding, which is why the old pair never lined up.) */
+.store-buttons {
     display: flex; align-items: center; justify-content: center;
-    gap: 16px; flex-wrap: wrap;
+    gap: 12px; flex-wrap: wrap;
 }
-/* Google's official badge — sized to sit level with our own button, never recolored/restyled */
-.play-badge-link { display: inline-flex; align-items: center; line-height: 0; }
-.play-badge-img { height: 52px; width: auto; }
+.store-btn {
+    display: inline-flex; align-items: center; gap: 11px;
+    height: 56px; min-width: 182px;
+    padding: 0 22px 0 18px;
+    background: #050905;
+    border: 1px solid var(--cream-20);
+    border-radius: 14px;
+    color: var(--cream);
+    transition: border-color 0.3s ease, transform 0.3s var(--ease), box-shadow 0.3s ease, background 0.3s ease;
+}
+.store-btn:hover {
+    border-color: var(--gold);
+    background: #0b120a;
+    transform: translateY(-2px);
+    box-shadow: 0 0 28px 4px var(--gold-glow), 0 10px 30px rgba(0,0,0,0.45);
+}
+.store-btn-icon { width: 26px; height: 26px; flex-shrink: 0; }
+.store-btn-text { display: flex; flex-direction: column; line-height: 1.1; text-align: left; }
+.store-btn-text small {
+    font-size: 10.5px; font-weight: 500;
+    color: var(--cream-60); letter-spacing: 0.02em;
+}
+.store-btn-text strong {
+    font-family: var(--font-display);
+    font-size: 19px; font-weight: 700;
+    letter-spacing: -0.02em; color: var(--cream);
+    white-space: nowrap;
+}
+.copy-hero .store-buttons { margin-top: 28px; }
+.copy-final-cta .store-buttons { margin-top: 4px; }
+.store-buttons-lg { margin-top: 40px; }
+.store-buttons-lg .store-btn { height: 62px; min-width: 204px; }
+.store-buttons-lg .store-btn-text strong { font-size: 21px; }
+.store-buttons-sm { justify-content: flex-start; margin-top: 22px; gap: 8px; }
+.store-buttons-sm .store-btn { height: 44px; min-width: 0; padding: 0 14px 0 12px; gap: 8px; border-radius: 11px; }
+.store-buttons-sm .store-btn-icon { width: 20px; height: 20px; }
+.store-buttons-sm .store-btn-text small { font-size: 9px; }
+.store-buttons-sm .store-btn-text strong { font-size: 14px; }
+
+/* Download section — the one place on the page with nothing but the ask */
+.section-download { background: var(--bg2); overflow: hidden; }
+.section-download::before {
+    content: ''; position: absolute; left: 50%; top: 55%;
+    width: 760px; height: 420px; transform: translate(-50%, -50%);
+    background: radial-gradient(ellipse at center, rgba(200,168,75,0.10), transparent 65%);
+    pointer-events: none;
+}
+.section-download .section-inner { position: relative; }
+.section-download .ios-requirement-note { margin-top: 18px; }
 
 /* ============================================
    BELOW-CANVAS SECTIONS
    ============================================ */
 .section {
     position: relative; z-index: 2;
-    padding: 140px 28px;
+    padding: 120px 28px;
     background: var(--bg);
 }
 .section-inner {
@@ -783,7 +848,7 @@ img { display: block; max-width: 100%; }
     display: flex; justify-content: space-between;
     margin-bottom: 56px; gap: 40px;
 }
-.footer-brand { max-width: 260px; }
+.footer-brand { max-width: 300px; }
 .footer-tagline {
     font-size: 14px; color: var(--cream-40); margin-top: 14px;
 }
@@ -818,12 +883,13 @@ img { display: block; max-width: 100%; }
 /* ============================================
    STAT COUNTER ROW
    ============================================ */
+/* Grid, not flex-wrap: four across or two-by-two, never a lone stat on its own row */
 .stat-row {
-    display: flex; align-items: center; justify-content: center;
-    gap: 32px; margin-top: 48px; width: 100%;
-    flex-wrap: wrap;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    row-gap: 28px; margin-top: 48px; width: 100%; max-width: 760px;
 }
-.stat-item { text-align: center; }
+.stat-item { text-align: center; padding: 0 12px; }
+.stat-item + .stat-item { border-left: 1px solid var(--border-card); }
 .stat-num {
     font-family: var(--font-mono);
     font-size: 40px; font-weight: 500;
@@ -836,7 +902,6 @@ img { display: block; max-width: 100%; }
     color: var(--cream-40); letter-spacing: 0.06em;
     text-transform: uppercase; margin-top: 8px;
 }
-.stat-divider { width: 1px; height: 36px; background: var(--border-card); }
 
 /* ============================================
    TRACTION ROW — compact proof bar under the hero
@@ -1124,8 +1189,6 @@ img { display: block; max-width: 100%; }
 .pf-shares { font-family: var(--font-mono); font-size: 13px; color: var(--cream-40); font-variant-numeric: tabular-nums; }
 .pf-caption { font-size: 12px; line-height: 1.5; color: var(--cream-40); margin-top: 14px; }
 
-/* Alternating section grounds now that the portfolio section sits in the flow */
-.section-free { background: var(--bg2); }
 
 /* ============================================
    ACCESSIBILITY
@@ -1172,8 +1235,13 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     .tape-list li { font-size: 12px; padding-right: 26px; }
     .pricing-grid { grid-template-columns: 1fr; }
     .who-grid { grid-template-columns: 1fr; }
-    .stat-row { gap: 20px; }
+    .stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; }
+    .stat-item:nth-child(odd) { border-left: none; }
     .stat-num { font-size: 32px; }
+    .copy-hero-inner { padding: 32px 20px 64px; }
+    .copy-hero .store-buttons { margin-top: 22px; }
+    .scroll-cue { margin-top: 26px; }
+    .scroll-cue-line { height: 30px; }
     .demo-card { padding: 26px; }
     .demo-question { font-size: 16px; }
 
@@ -1205,7 +1273,6 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     .diagram-label { font-size: 11px; }
     .diagram-desc { font-size: 12px; line-height: 1.4; max-width: 200px; }
 
-    .copy-hero { padding-bottom: 5vh; }
     .section { padding: 80px 20px; }
     .section-pricing { padding: 100px 20px; }
 
@@ -1220,10 +1287,20 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     .card { padding: 28px 22px; }
     .pricing-card { padding: 32px 22px; }
     .btn-gold { padding: 14px 28px; font-size: 13px; }
-    .footer-cols { flex-direction: column; gap: 28px; }
+    /* Two store buttons side by side on a 360–430px phone */
+    .store-buttons { gap: 10px; flex-wrap: nowrap; width: 100%; }
+    .store-btn { flex: 1 1 0; min-width: 0; height: 54px; padding: 0 12px; gap: 8px; justify-content: center; }
+    .store-btn-icon { width: 22px; height: 22px; }
+    .store-btn-text small { font-size: 9.5px; }
+    .store-btn-text strong { font-size: 16px; }
+    .store-buttons-lg .store-btn { height: 58px; min-width: 0; }
+    .store-buttons-lg .store-btn-text strong { font-size: 17px; }
+    .store-buttons-sm { width: auto; }
+    .store-buttons-sm .store-btn { flex: 0 1 auto; }
+
+    .footer-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 20px; }
+    .footer-col-signup { grid-column: 1 / -1; }
     .who-grid { grid-template-columns: 1fr; }
-    .stat-row { gap: 14px 24px; }
-    .stat-divider:nth-of-type(2) { display: none; }
     .traction-row { gap: 22px 28px; }
     .traction-row .stat-divider { display: none; }
     .traction-row .stat-item { min-width: 90px; }

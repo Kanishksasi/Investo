@@ -24,10 +24,17 @@
     // quality gain, just wasted compositing work). 1.5 stays crisp and is cheaper.
     const DPR_CAP = 1.5;
 
+    // Top offset for the frame on portrait screens: nav height (56px) + breathing room.
+    const PORTRAIT_TOP = 68;
+
+    const APP_STORE_URL = 'https://apps.apple.com/us/app/investo-finance-ed/id6761702116';
+    const PLAY_URL      = 'https://play.google.com/store/apps/details?id=com.investo.learnfinance';
+
     // The story beats: each is a resting point the sequence pauses on.
     // holdMs: how long to hold before auto-advancing (Infinity = stay).
     const BEATS = [
-        { key: 'hero',     frame: 0,                 overlay: 'hero',       holdMs: 1800 },
+        // Long enough to read the headline and tap a store button before autoplay moves on
+        { key: 'hero',     frame: 0,                 overlay: 'hero',       holdMs: 4200 },
         { key: 'diagram',  frame: TOTAL_FRAMES - 1,   overlay: 'diagram',    holdMs: 3400 },
         { key: 'cta',      frame: 0,                  overlay: 'cta',        holdMs: Infinity }
     ];
@@ -78,6 +85,9 @@
                 resize();
                 drawFrame(0);
                 document.body.classList.add('loaded');
+                // Headline + store buttons shouldn't wait on the other 119 frames
+                // (~27MB on desktop) — only the animation needs those.
+                setOverlay('hero');
 
                 let remaining = TOTAL_FRAMES - 1;
                 if (remaining <= 0) { resolve(); return; }
@@ -135,7 +145,12 @@
         const ih    = img.naturalHeight;
         const scale = Math.min(cw / iw, ch / ih);
         const dw    = iw * scale, dh = ih * scale;
-        const dx    = (cw - dw) / 2,  dy = (ch - dh) / 2;
+        // Portrait screens (phones, upright tablets): the 16:9 frame is a short strip, so
+        // pin it just under the nav and leave the space below for the copy, instead of
+        // centering it where the headline would sit on top of the busy app mockup.
+        const portrait = ch > cw * 1.05;
+        const dx    = (cw - dw) / 2;
+        const dy    = portrait ? Math.min((ch - dh) / 2, PORTRAIT_TOP) : (ch - dh) / 2;
 
         ctx.globalAlpha = 1;
         ctx.drawImage(img, dx, dy, dw, dh);
@@ -400,8 +415,25 @@
         }, { passive: true });
     }
 
+    // ---- Nav "Get the app": straight to the visitor's own store ----
+    // Phones skip the page entirely (one tap → store). Desktop has no store to
+    // open, so it stays on #download where both buttons and requirements are.
+    function initSmartStoreLink() {
+        const btn = document.getElementById('nav-cta-btn');
+        if (!btn) return;
+        const ua = navigator.userAgent || '';
+        // iPadOS reports itself as a Mac; touch support is what gives it away.
+        const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+        const isAndroid = /Android/i.test(ua);
+        if (!isIOS && !isAndroid) return;
+        btn.href = isIOS ? APP_STORE_URL : PLAY_URL;
+        btn.target = '_blank';
+        btn.rel = 'noopener';
+    }
+
     // ---- Init ----
     function init() {
+        initSmartStoreLink();
         resize();
         window.addEventListener('resize', resize, { passive: true });
 
