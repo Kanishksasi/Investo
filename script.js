@@ -42,7 +42,7 @@
         const nodes = Array.prototype.slice.call(document.querySelectorAll('#copy-diagram .diagram-node'));
         if (!text || !cta || !card || !phone || !copy || !brand) return;
 
-        const SCROLL_VH = 3.8;               // how many viewport heights the sequence takes
+        const SCROLL_VH = 2.8;               // how many viewport heights the sequence takes
         const mq = window.matchMedia('(min-width: 1024px) and (min-height: 640px)');
         let active = false, target = 0, shown = 0, raf = null, vh = window.innerHeight;
 

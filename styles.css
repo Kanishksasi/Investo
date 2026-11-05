@@ -595,6 +595,8 @@ html.cine .diagram-col {
 html.cine .diagram-col-left  { right: calc(100% + clamp(16px, 2vw, 36px)); align-items: flex-end; text-align: right; }
 html.cine .diagram-col-right { left:  calc(100% + clamp(16px, 2vw, 36px)); align-items: flex-start; text-align: left; }
 html.cine .diagram-node { opacity: 0; will-change: transform, opacity; }
+/* While the card animates, flat glass is cheaper and reads the same on the card's gradient */
+html.cine .diagram-node-inner { backdrop-filter: none; -webkit-backdrop-filter: none; background: linear-gradient(135deg, rgba(232,231,187,0.09) 0%, rgba(232,231,187,0.03) 100%); }
 html.cine .cine-cta {
     position: absolute; inset: 0; z-index: 10;
     display: flex; align-items: center; justify-content: center;
@@ -1017,7 +1019,7 @@ html.cine .scroll-cue {
 .faq-answer a:hover { border-color: var(--gold); }
 
 /* ---------- Footer — motion ending ----------
-   Aurora glow, grid, a diagonal topic marquee, giant masked brand text and glass
+   Aurora glow, grid, giant masked brand text and glass
    pills. On large screens (html.cine-footer) the footer is fixed beneath the page
    and clipped to its wrapper, so the last section scrolls away like a curtain. */
 .footer-reveal { position: relative; z-index: 2; }
@@ -1026,7 +1028,7 @@ html.cine .scroll-cue {
     background: var(--bg2);
     border-top: 1px solid var(--border);
     color: var(--text-body);
-    padding: clamp(104px, 14vh, 150px) var(--gutter) 24px;
+    padding: clamp(72px, 9vw, 104px) var(--gutter) 24px;
     display: flex; flex-direction: column;
 }
 .footer-aurora {
@@ -1052,38 +1054,18 @@ html.cine .scroll-cue {
 }
 .footer-giant {
     --fr: 1;
-    position: absolute; left: 50%; bottom: -3%; z-index: 0;
+    position: absolute; left: 50%; bottom: -5%; z-index: 0;
     pointer-events: none; user-select: none; white-space: nowrap; margin: 0;
     font-family: var(--font-display); font-weight: 800;
-    font-size: 26vw; line-height: 0.75; letter-spacing: -0.05em;
+    font-size: 19vw; line-height: 0.75; letter-spacing: -0.05em;
     color: transparent;
-    -webkit-text-stroke: 1px rgba(232,231,187,0.07);
-    background: linear-gradient(180deg, rgba(232,231,187,0.12) 0%, transparent 60%);
+    -webkit-text-stroke: 1px rgba(232,231,187,0.06);
+    background: linear-gradient(180deg, rgba(232,231,187,0.10) 0%, transparent 60%);
     -webkit-background-clip: text; background-clip: text;
     opacity: var(--fr);
     transform: translate(-50%, calc((1 - var(--fr)) * 10vh)) scale(calc(0.8 + 0.2 * var(--fr)));
     will-change: transform, opacity;
 }
-.footer-marquee {
-    position: absolute; top: clamp(28px, 4vh, 48px); left: -5%; width: 110%; z-index: 1;
-    overflow: hidden; transform: rotate(-2deg);
-    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-    background: rgba(8, 14, 7, 0.6);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    padding: 12px 0;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
-}
-.footer-marquee-track { display: flex; width: max-content; animation: footer-marquee 52s linear infinite; }
-.footer-marquee-list { display: flex; list-style: none; margin: 0; padding: 0; }
-.footer-marquee-list li {
-    display: flex; align-items: center;
-    padding: 0 0 0 28px;
-    font-family: var(--font-mono); font-size: 12px; font-weight: 500;
-    letter-spacing: 0.28em; text-transform: uppercase;
-    color: var(--text-muted); white-space: nowrap;
-}
-.footer-marquee-list li::after { content: '\2726'; color: rgba(200,168,75,0.6); margin-left: 44px; font-size: 10px; letter-spacing: 0; }
-@keyframes footer-marquee { to { transform: translateX(-50%); } }
 
 .footer-inner {
     position: relative; z-index: 2;
@@ -1239,7 +1221,7 @@ html.cine-footer .footer-reveal { height: 100vh; clip-path: inset(0); }
 html.cine-footer .footer {
     position: fixed; left: 0; bottom: 0; width: 100%; height: 100vh;
     border-top: none;
-    padding-top: clamp(96px, 12vh, 140px); padding-bottom: 24px;
+    padding-top: clamp(56px, 8vh, 96px); padding-bottom: 24px;
 }
 html.cine-footer .footer-inner { min-height: 0; }
 html.cine-footer .footer-top { margin: auto 0; }
@@ -1269,7 +1251,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     .tape-list[aria-hidden="true"] { display: none; }
     .scroll-cue, .scroll-cue-dot { animation: none; }
     .js .reveal:not(.in-view) { opacity: 1; transform: none; }
-    .footer-marquee-track, .footer-aurora { animation: none; }
+    .footer-aurora { animation: none; }
     .cine-in, .cine-line--clip { animation: none; }
     .store-btn:hover { transform: none; }
     *, *::before, *::after {
@@ -1316,8 +1298,15 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     .copy-hero .display-heading { font-size: clamp(36px, 10vw, 54px); }
     .hero-sub { margin-top: 18px; max-width: 460px; }
     .copy-hero .store-buttons { margin-top: 26px; width: 100%; }
-    .cine-text { padding-bottom: 32px; }
+    .cine-text { padding-bottom: 28px; }
     .cine-card { border-radius: 22px; }
+    .cine-card-inner { gap: 22px; }
+    .cine-phone { width: min(54vw, 250px); }
+    .cine-mockup { gap: 18px; }
+    .cine-mockup .diagram-grid { gap: 8px; }
+    .diagram-node-inner { padding: 11px 14px 12px; }
+    .diagram-desc { font-size: 13px; }
+    .cine-cta { padding-top: clamp(40px, 7vh, 64px); }
     .cine-cta .store-buttons { width: 100%; }
     .copy-reassemble .section-heading { font-size: clamp(26px, 7vw, 36px); }
     .cta-heading { font-size: clamp(20px, 5.4vw, 26px); }
@@ -1342,10 +1331,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     /* Leave room above the phone download bar for the last section before the footer */
     .section-faq { padding-bottom: calc(var(--section-pad) + 64px); }
 
-    .footer { padding-top: clamp(88px, 12vh, 120px); }
-    .footer-marquee { padding: 10px 0; }
-    .footer-marquee-list li { font-size: 11px; letter-spacing: 0.22em; padding-left: 20px; }
-    .footer-marquee-list li::after { margin-left: 30px; }
+    .footer { padding-top: clamp(64px, 10vh, 88px); }
     .footer-bottom { flex-direction: column; justify-content: center; text-align: center; }
 }
 
