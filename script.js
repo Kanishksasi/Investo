@@ -1,321 +1,255 @@
 /* =============================================
    INVESTO — Site behaviour
-   1. Sequence stage: three resting beats (overview → feature diagram → download)
-      played on a contained canvas. Autoplays only while the stage is on screen,
-      pauses on hover/focus, and hands control to the visitor the moment they
-      touch a dot or arrow. Page scrolling is never intercepted.
-   2. Navigation (hide on scroll, mobile menu, reading progress)
-   3. Progressive enhancements: reveal-on-scroll, stat count-up, FAQ, quiz, phone bar
+   1. Cinematic hero: on large screens the hero pins while the scroll position
+      plays the sequence (headline → the card with the real app and its callouts
+      → the download ask). Scrolling is never intercepted; it only drives the
+      timeline. Smaller screens, reduced motion and no-JS get a plain stack.
+   2. Motion footer: curtain reveal, scroll-linked parallax, magnetic pills.
+   3. Navigation (hide on scroll, mobile menu, reading progress)
+   4. Enhancements: reveal-on-scroll, stat count-up, FAQ, quiz, phone bar
    ============================================= */
 (function () {
     'use strict';
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const saveData     = !!(navigator.connection && navigator.connection.saveData);
+    const finePointer  = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const onMQ = (mq, fn) => { if (mq.addEventListener) mq.addEventListener('change', fn); else mq.addListener(fn); };
+
+    const clamp01 = v => Math.max(0, Math.min(1, v));
+    const seg = (p, a, b, ease) => { const t = clamp01((p - a) / (b - a)); return ease ? ease(t) : t; };
+    const easeInOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const easeInCubic    = t => t * t * t;
+    const easeOutQuart   = t => 1 - Math.pow(1 - t, 4);
+    const easeOutExpo    = t => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    const easeInOutExpo  = t => t === 0 ? 0 : t === 1 ? 1 : t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2;
+    const easeOutBack    = t => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
 
     /* =========================================================
-       1. SEQUENCE STAGE
+       1. CINEMATIC HERO
        ========================================================= */
-    // Phones get a 960×540 set (~5.5MB vs ~35MB). Must match the media-conditional
-    // preloads in index.html so the two resting frames are reused from cache.
-    const FRAME_DIR    = window.matchMedia('(max-width: 820px)').matches ? './frames-webp-m/' : './frames-webp/';
-    const FRAME_EXT    = '.webp';
-    const TOTAL_FRAMES = 120;
-    const LAST         = TOTAL_FRAMES - 1;
-    const TRANSITION_MS = 2600;   // full frame scrub between beats
-    const XFADE_MS      = 650;    // fallback when the in-between frames aren't loaded
+    function initCinematicHero() {
+        const hero  = document.getElementById('hero');
+        const pin   = document.getElementById('cine-pin');
+        if (!hero || !pin) return;
+        const text  = document.getElementById('copy-hero');
+        const cta   = document.getElementById('copy-final-cta');
+        const card  = document.getElementById('cine-card');
+        const phone = document.getElementById('cine-phone');
+        const phoneImg = document.getElementById('cine-phone-img');
+        const copy  = document.getElementById('copy-explode');
+        const brand = document.getElementById('cine-brand');
+        const cue   = document.getElementById('scroll-cue');
+        const nodes = Array.prototype.slice.call(document.querySelectorAll('#copy-diagram .diagram-node'));
+        if (!text || !cta || !card || !phone || !copy || !brand) return;
 
-    const BEATS = [
-        { frame: 0,    overlay: 'explode', holdMs: 5200 },
-        { frame: LAST, overlay: 'diagram', holdMs: 7800 },
-        { frame: 0,    overlay: 'cta',     holdMs: Infinity }
-    ];
+        const SCROLL_VH = 2.8;               // how many viewport heights the sequence takes
+        const mq = window.matchMedia('(min-width: 1024px) and (min-height: 640px)');
+        let active = false, target = 0, shown = 0, raf = null, vh = window.innerHeight;
 
-    // Below 820px the captions sit under the stage instead of over it (see styles.css)
-    const stackedLayout = window.matchMedia('(max-width: 820px)');
-    const stage    = document.getElementById('stage');
-    const overlayBox = document.getElementById('stage-overlays');
-    const canvas   = document.getElementById('frame-canvas');
-    const overlays = {
-        explode: document.getElementById('copy-explode'),
-        diagram: document.getElementById('copy-diagram'),
-        cta:     document.getElementById('copy-final-cta')
-    };
-    const dots     = Array.prototype.slice.call(document.querySelectorAll('.beat-dot'));
-    const prevBtn  = document.getElementById('beat-prev');
-    const nextBtn  = document.getElementById('beat-next');
-    const section  = document.getElementById('canvas-section');
-
-    const images   = [];
-    let loadedCount = 0;
-    let restReady   = false;      // frames 0 and LAST drawn — the stage can show a beat
-    let allLoading  = false;
-    let ctx         = null;
-
-    let currentBeat   = 0;
-    let currentFrame  = 0;
-    let transitioning = false;
-    let rafId         = null;
-    let holdTimer     = null;
-    let userControls  = false;    // once the visitor steps manually, autoplay stays off
-    let inView        = false;
-    let hovering      = false;
-    let focused       = false;
-
-    function framePath(i) { return FRAME_DIR + String(i + 1).padStart(3, '0') + FRAME_EXT; }
-    function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
-
-    function loadImage(i) {
-        return new Promise(resolve => {
-            if (images[i]) { resolve(images[i]); return; }
-            const img = new Image();
-            img.decoding = 'async';
-            img.onload  = () => { images[i] = img; loadedCount++; resolve(img); };
-            img.onerror = () => resolve(null);
-            img.src = framePath(i);
-        });
-    }
-
-    // ---- Canvas sizing & drawing ----
-    function resizeCanvas() {
-        if (!canvas || !ctx || !stage) return;
-        const w = stage.clientWidth, h = stage.clientHeight;
-        if (!w || !h) return;
-        // Never allocate more backing pixels than the 1920px source can fill
-        const dpr = Math.min(window.devicePixelRatio || 1, 2, 1920 / w);
-        canvas.width  = Math.round(w * dpr);
-        canvas.height = Math.round(h * dpr);
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        drawFrame(currentFrame);
-    }
-
-    function fit(img, cw, ch) {
-        const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight); // cover: stage is already 16:9
-        const dw = img.naturalWidth * scale, dh = img.naturalHeight * scale;
-        return [(cw - dw) / 2, (ch - dh) / 2, dw, dh];
-    }
-
-    function drawFrame(floatIdx) {
-        if (!ctx) return;
-        const idx = Math.round(Math.max(0, Math.min(LAST, floatIdx)));
-        const img = images[idx];
-        const cw = stage.clientWidth, ch = stage.clientHeight;
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = '#080E07';
-        ctx.fillRect(0, 0, cw, ch);
-        if (!img || !img.naturalWidth) return;
-        const r = fit(img, cw, ch);
-        ctx.drawImage(img, r[0], r[1], r[2], r[3]);
-    }
-
-    function drawBlend(a, b, t) {
-        if (!ctx) return;
-        const cw = stage.clientWidth, ch = stage.clientHeight;
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = '#080E07';
-        ctx.fillRect(0, 0, cw, ch);
-        const ia = images[a], ib = images[b];
-        if (ia && ia.naturalWidth) { ctx.globalAlpha = 1; const r = fit(ia, cw, ch); ctx.drawImage(ia, r[0], r[1], r[2], r[3]); }
-        if (ib && ib.naturalWidth) { ctx.globalAlpha = t; const r = fit(ib, cw, ch); ctx.drawImage(ib, r[0], r[1], r[2], r[3]); }
-        ctx.globalAlpha = 1;
-    }
-
-    // ---- Overlays, dots, arrows ----
-    function setOverlay(key, transit) {
-        Object.keys(overlays).forEach(k => {
-            const el = overlays[k];
-            if (!el) return;
-            el.classList.toggle('visible', k === key);
-            el.classList.toggle('is-transit', k === key && !!transit);
-        });
-        syncCaptionHeight();
-    }
-
-    // Stacked layout: the caption area follows the active beat's height instead of
-    // reserving room for the tallest one, and eases between the two sizes.
-    function syncCaptionHeight() {
-        if (!overlayBox) return;
-        if (!stackedLayout.matches) { overlayBox.style.height = ''; return; }
-        const active = Object.keys(overlays).map(k => overlays[k]).find(el => el && el.classList.contains('visible'));
-        overlayBox.style.height = active ? active.offsetHeight + 'px' : '0px';
-    }
-
-    function updateControls(activeIdx) {
-        dots.forEach(dot => {
-            const on = Number(dot.dataset.beat) === activeIdx;
-            dot.classList.toggle('active', on);
-            dot.setAttribute('aria-selected', on ? 'true' : 'false');
-            dot.tabIndex = on ? 0 : -1;
-        });
-        if (prevBtn) prevBtn.disabled = activeIdx === 0;
-        if (nextBtn) nextBtn.disabled = activeIdx === BEATS.length - 1;
-    }
-
-    // ---- Autoplay ----
-    function clearHold() { if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; } }
-    function autoplayAllowed() {
-        return !userControls && inView && !hovering && !focused && !reduceMotion.matches && document.visibilityState === 'visible';
-    }
-    function scheduleHold() {
-        clearHold();
-        const beat = BEATS[currentBeat];
-        if (beat.holdMs === Infinity || !autoplayAllowed() || transitioning) return;
-        holdTimer = setTimeout(() => {
-            if (autoplayAllowed() && currentBeat < BEATS.length - 1) goToBeat(currentBeat + 1, false);
-        }, beat.holdMs);
-    }
-
-    // ---- Beat transitions ----
-    function goToBeat(targetIdx, byUser) {
-        if (targetIdx < 0 || targetIdx >= BEATS.length) return;
-        if (byUser) userControls = true;
-        clearHold();
-        if (targetIdx === currentBeat && !transitioning) { scheduleHold(); return; }
-        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-
-        const forward    = targetIdx > currentBeat;
-        const from       = BEATS[currentBeat];
-        const startFrame = currentFrame;
-        const endFrame   = BEATS[targetIdx].frame;
-        const target     = BEATS[targetIdx];
-        const canScrub   = restReady && loadedCount >= TOTAL_FRAMES && !reduceMotion.matches;
-        const sameFrame  = Math.round(startFrame) === endFrame;
-        const scrubMs    = stackedLayout.matches ? 1800 : TRANSITION_MS;
-        const duration   = reduceMotion.matches ? 0 : (sameFrame ? 0 : (canScrub ? scrubMs : XFADE_MS));
-
-        transitioning = true;
-        currentBeat = targetIdx;              // state is the destination, so controls never lie
-        updateControls(targetIdx);
-
-        // During the frames' move: the reassemble statement rides on top of the explode-out,
-        // otherwise the current caption stays put — except the download panel's scrim, which
-        // would hide the animation when it sits over the stage.
-        if (target.overlay === 'cta' && forward && duration > 0) setOverlay('cta', true);
-        else if (from.overlay === 'cta' && !stackedLayout.matches) setOverlay(null);
-
-        const finish = () => {
-            rafId = null;
-            transitioning = false;
-            currentFrame = endFrame;
-            drawFrame(endFrame);
-            setOverlay(target.overlay, false);
-            scheduleHold();
-        };
-
-        if (duration === 0) { finish(); return; }
-
-        const t0 = performance.now();
-        const a  = Math.round(startFrame);
-        function step(now) {
-            const t = Math.min(1, (now - t0) / duration);
-            if (canScrub) {
-                currentFrame = startFrame + (endFrame - startFrame) * easeInOutCubic(t);
-                drawFrame(currentFrame);
-            } else {
-                drawBlend(a, endFrame, easeInOutCubic(t));
-            }
-            if (t < 1) rafId = requestAnimationFrame(step);
-            else finish();
+        function progressFromScroll() {
+            const top = hero.getBoundingClientRect().top + window.scrollY;
+            return clamp01((window.scrollY - top) / (vh * SCROLL_VH));
         }
-        rafId = requestAnimationFrame(step);
-    }
 
-    // ---- Loading ----
-    function loadRestFrames() {
-        return Promise.all([loadImage(0), loadImage(LAST)]).then(() => {
-            if (!images[0]) return;                       // keep the <picture> fallback visible
-            restReady = true;
-            resizeCanvas();
-            drawFrame(BEATS[currentBeat].frame);
-            stage.classList.add('is-drawn');
-        });
-    }
+        function apply(p) {
+            // Headline recedes
+            const t1 = seg(p, 0, 0.18, easeInOutCubic);
+            text.style.transform = 'scale(' + (1 + 0.15 * t1) + ')';
+            text.style.filter = 'blur(' + (20 * t1) + 'px)';
+            text.style.opacity = String(1 - 0.8 * t1);
+            text.style.visibility = p >= 0.66 ? 'hidden' : 'visible';
+            text.style.pointerEvents = p > 0.06 ? 'none' : '';
+            if (cue) { cue.style.visibility = p > 0.06 ? 'hidden' : ''; }
 
-    function loadAllFrames() {
-        if (allLoading || saveData || reduceMotion.matches) return;
-        allLoading = true;
-        const queue = [];
-        for (let i = 1; i < LAST; i++) queue.push(i);
-        const CONCURRENCY = 6;
-        function next() {
-            if (!queue.length) return Promise.resolve();
-            return loadImage(queue.shift()).then(next);
-        }
-        const workers = [];
-        for (let k = 0; k < CONCURRENCY; k++) workers.push(next());
-    }
+            // Card rises, fills the screen, later pulls back and leaves
+            const rise   = seg(p, 0.00, 0.20, easeInOutCubic);
+            const expand = seg(p, 0.18, 0.30, easeInOutCubic);
+            const pull   = seg(p, 0.72, 0.83, easeInOutExpo);
+            const fly    = seg(p, 0.83, 0.95, easeInCubic);
+            const size   = 85 + 15 * expand - 15 * pull;
+            const radius = 40 * (1 - expand) + 40 * pull;
+            const cardY  = (vh + 200) * (1 - rise) - (vh + 300) * fly;
+            card.style.transform = 'translate3d(0,' + cardY.toFixed(1) + 'px,0)';
+            card.style.width = size + 'vw';
+            card.style.height = size + 'vh';
+            card.style.borderRadius = radius + 'px';
+            card.style.opacity = String(1 - 0.6 * pull);   // the ask shows through as the card steps back
+            card.style.visibility = p >= 0.999 ? 'hidden' : 'visible';
 
-    function initStage() {
-        if (!stage || !canvas) return;
-        ctx = canvas.getContext('2d', { alpha: false });
-        if (!ctx) return;
-
-        setOverlay(BEATS[0].overlay, false);
-        updateControls(0);
-
-        dots.forEach(dot => dot.addEventListener('click', () => goToBeat(Number(dot.dataset.beat), true)));
-        if (prevBtn) prevBtn.addEventListener('click', () => goToBeat(currentBeat - 1, true));
-        if (nextBtn) nextBtn.addEventListener('click', () => goToBeat(currentBeat + 1, true));
-
-        const dotList = document.getElementById('beat-dots');
-        if (dotList) {
-            dotList.addEventListener('keydown', e => {
-                let target = null;
-                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') target = Math.min(BEATS.length - 1, currentBeat + 1);
-                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') target = Math.max(0, currentBeat - 1);
-                else if (e.key === 'Home') target = 0;
-                else if (e.key === 'End') target = BEATS.length - 1;
-                if (target === null) return;
-                e.preventDefault();
-                goToBeat(target, true);
-                if (dots[target]) dots[target].focus();
+            // Inside the card: phone, callouts, tagline, brand
+            const out = seg(p, 0.66, 0.73, easeInCubic);
+            const m   = seg(p, 0.22, 0.42, easeOutExpo);
+            phone.style.opacity = String(m * (1 - out));
+            phone.style.transform =
+                'translateY(' + (300 * (1 - m) - 40 * out) + 'px) translateZ(' + (-500 * (1 - m) - 200 * out) + 'px) ' +
+                'rotateX(' + (50 * (1 - m)) + 'deg) rotateY(' + (-30 * (1 - m)) + 'deg) scale(' + ((0.6 + 0.4 * m) * (1 - 0.1 * out)) + ')';
+            nodes.forEach((n, i) => {
+                const ni = seg(p, 0.30 + i * 0.025, 0.44 + i * 0.025, easeOutBack);
+                n.style.opacity = String(clamp01(ni) * (1 - out));
+                n.style.transform = 'translateY(' + (100 * (1 - ni) - 40 * out) + 'px) scale(' + ((0.7 + 0.3 * ni) * (1 - 0.1 * out)) + ') rotate(' + (-10 * (1 - ni)) + 'deg)';
             });
+            const c = seg(p, 0.40, 0.52, easeOutQuart);
+            copy.style.opacity = String(c * (1 - out));
+            copy.style.transform = 'translate(' + (-50 * (1 - c)) + 'px,' + (-40 * out) + 'px)';
+            brand.style.opacity = String(c * (1 - out));
+            brand.style.transform = 'translateX(' + (50 * (1 - c)) + 'px) scale(' + (0.8 + 0.2 * c) + ')';
+
+            // The closing ask waits behind the card, then is uncovered
+            const show = p >= 0.66;
+            cta.style.visibility = show ? 'visible' : 'hidden';
+            cta.style.opacity = show ? '1' : '0';
+            cta.style.transform = 'scale(' + (0.8 + 0.2 * pull) + ')';
+            cta.style.filter = 'blur(' + (30 * (1 - pull)) + 'px)';
+            cta.style.pointerEvents = p > 0.9 ? 'auto' : 'none';
         }
 
-        // Pause while the pointer or keyboard focus is on the stage
-        const host = document.getElementById('canvas-sticky') || stage;
-        host.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { hovering = true; clearHold(); } });
-        host.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { hovering = false; scheduleHold(); } });
-        host.addEventListener('focusin',  () => { focused = true; clearHold(); });
-        host.addEventListener('focusout', () => { focused = false; scheduleHold(); });
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') scheduleHold(); else clearHold();
-        });
-
-        if ('ResizeObserver' in window) {
-            new ResizeObserver(resizeCanvas).observe(stage);
-            const ro = new ResizeObserver(syncCaptionHeight);
-            Object.keys(overlays).forEach(k => { if (overlays[k]) ro.observe(overlays[k]); });
-        } else {
-            window.addEventListener('resize', () => { resizeCanvas(); syncCaptionHeight(); }, { passive: true });
-        }
-        const onLayoutChange = () => syncCaptionHeight();
-        if (stackedLayout.addEventListener) stackedLayout.addEventListener('change', onLayoutChange); else stackedLayout.addListener(onLayoutChange);
-        if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncCaptionHeight);
-        // Enable the height easing only after the first measurement, so load doesn't animate
-        requestAnimationFrame(() => { if (overlayBox) overlayBox.classList.add('is-measured'); });
-
-        if ('IntersectionObserver' in window) {
-            // Autoplay only while at least half the stage is on screen
-            new IntersectionObserver(([e]) => {
-                inView = e.isIntersecting;
-                if (inView) scheduleHold(); else clearHold();
-            }, { threshold: 0.5 }).observe(stage);
-            // Fetch the in-between frames once the stage is about a screen away
-            const near = new IntersectionObserver(([e]) => {
-                if (e.isIntersecting) { loadAllFrames(); near.disconnect(); }
-            }, { rootMargin: '120% 0px' });
-            near.observe(stage);
-        } else {
-            inView = true;
-            window.addEventListener('load', loadAllFrames);
+        function clearStyles() {
+            [text, cta, card, phone, copy, brand, cue].concat(nodes).forEach(el => { if (el) el.removeAttribute('style'); });
+            if (phoneImg) phoneImg.removeAttribute('style');
+            hero.style.removeProperty('--cine-scroll');
         }
 
-        loadRestFrames().then(() => scheduleHold());
+        function tick() {
+            raf = null;
+            const d = target - shown;
+            if (Math.abs(d) < 0.0005) { shown = target; apply(shown); return; }
+            shown += d * 0.16;                 // soft scrub, like a 1s lag
+            apply(shown);
+            raf = requestAnimationFrame(tick);
+        }
+        function onScroll() {
+            if (!active) return;
+            target = progressFromScroll();
+            if (reduceMotion.matches) { shown = target; apply(shown); return; }
+            if (!raf) raf = requestAnimationFrame(tick);
+        }
+
+        function enable() {
+            if (active) return;
+            active = true;
+            document.documentElement.classList.add('cine');
+            vh = window.innerHeight;
+            hero.style.setProperty('--cine-scroll', (SCROLL_VH * 100) + 'vh');
+            target = shown = progressFromScroll();
+            apply(shown);
+        }
+        function disable() {
+            if (!active) return;
+            active = false;
+            if (raf) { cancelAnimationFrame(raf); raf = null; }
+            document.documentElement.classList.remove('cine');
+            clearStyles();
+        }
+        function update() { if (mq.matches && !reduceMotion.matches) enable(); else disable(); }
+
+        update();
+        onMQ(mq, update);
+        onMQ(reduceMotion, update);
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', () => { vh = window.innerHeight; if (active) { target = shown = progressFromScroll(); apply(shown); } }, { passive: true });
+        window.addEventListener('pageshow', () => { if (active) { target = shown = progressFromScroll(); apply(shown); } });
+
+        // Pointer: the card's sheen follows the cursor and the phone tilts a little
+        if (finePointer.matches) {
+            let tx = 0, ty = 0, cx = 0, cy = 0, tiltRaf = null;
+            function tiltTick() {
+                tiltRaf = null;
+                cx += (tx - cx) * 0.08; cy += (ty - cy) * 0.08;
+                if (phoneImg) phoneImg.style.transform = 'rotateY(' + (cx * 12).toFixed(2) + 'deg) rotateX(' + (-cy * 12).toFixed(2) + 'deg)';
+                if (Math.abs(tx - cx) > 0.001 || Math.abs(ty - cy) > 0.001) tiltRaf = requestAnimationFrame(tiltTick);
+            }
+            window.addEventListener('pointermove', e => {
+                if (!active || reduceMotion.matches || e.pointerType !== 'mouse') return;
+                if (window.scrollY > vh * (SCROLL_VH + 1)) return;
+                const r = card.getBoundingClientRect();
+                card.style.setProperty('--mouse-x', (e.clientX - r.left) + 'px');
+                card.style.setProperty('--mouse-y', (e.clientY - r.top) + 'px');
+                tx = (e.clientX / window.innerWidth - 0.5) * 2;
+                ty = (e.clientY / window.innerHeight - 0.5) * 2;
+                if (!tiltRaf) tiltRaf = requestAnimationFrame(tiltTick);
+            }, { passive: true });
+        }
     }
 
     /* =========================================================
-       2. NAVIGATION
+       2. MOTION FOOTER
+       ========================================================= */
+    function initFooterReveal() {
+        const wrap   = document.getElementById('download');
+        const footer = document.getElementById('footer');
+        const giant  = document.getElementById('footer-giant');
+        const top    = document.getElementById('footer-top');
+        if (!wrap || !footer || !giant || !top) return;
+        const mq = window.matchMedia('(min-width: 1024px)');
+        let active = false, queued = false;
+
+        function paint() {
+            queued = false;
+            if (!active) return;
+            const r = wrap.getBoundingClientRect();
+            const vh = window.innerHeight;
+            // Settles a little before the very bottom, so landing on #download (which keeps the
+            // nav offset) already looks finished
+            const t = clamp01((vh - r.top) / Math.max(1, r.height) / 0.9);
+            giant.style.setProperty('--fr', easeOutQuart(t).toFixed(4));
+            top.style.setProperty('--fr2', easeOutQuart(clamp01((t - 0.3) / 0.7)).toFixed(4));
+        }
+        function update() {
+            // Curtain only when the whole footer fits on screen; otherwise it is a normal footer
+            const root = document.documentElement;
+            active = false;
+            if (mq.matches && !reduceMotion.matches) {
+                root.classList.add('cine-footer');
+                // In-flow content only: the decorative brand word hangs past the edge on purpose
+                const cs = getComputedStyle(footer);
+                const inner = footer.querySelector('.footer-inner');
+                const bottom = footer.querySelector('.footer-bottom');
+                const gap = inner ? parseFloat(getComputedStyle(inner).rowGap) || 0 : 0;
+                const needed = top.offsetHeight + (bottom ? bottom.offsetHeight : 0) + gap + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+                active = needed <= window.innerHeight + 1;
+            }
+            root.classList.toggle('cine-footer', active);
+            if (!active) { giant.style.removeProperty('--fr'); top.style.removeProperty('--fr2'); }
+            else paint();
+        }
+        update();
+        onMQ(mq, update);
+        onMQ(reduceMotion, update);
+        window.addEventListener('scroll', () => { if (active && !queued) { queued = true; requestAnimationFrame(paint); } }, { passive: true });
+        window.addEventListener('resize', update, { passive: true });
+        window.addEventListener('load', update);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(update);
+    }
+
+    // Magnetic pills: nudge toward the cursor, spring back on leave (mouse only)
+    function initMagnetic() {
+        if (!finePointer.matches || reduceMotion.matches) return;
+        document.querySelectorAll('.magnetic').forEach(el => {
+            el.addEventListener('pointermove', e => {
+                if (e.pointerType !== 'mouse') return;
+                const r = el.getBoundingClientRect();
+                const x = e.clientX - r.left - r.width / 2;
+                const y = e.clientY - r.top - r.height / 2;
+                el.style.setProperty('--mx', (x * 0.35).toFixed(1) + 'px');
+                el.style.setProperty('--my', (y * 0.35).toFixed(1) + 'px');
+                el.classList.add('is-mag');
+            });
+            el.addEventListener('pointerleave', () => {
+                el.style.setProperty('--mx', '0px');
+                el.style.setProperty('--my', '0px');
+                el.classList.remove('is-mag');
+            });
+        });
+    }
+
+    function initBackToTop() {
+        const btn = document.getElementById('footer-top-btn');
+        if (!btn) return;
+        btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'auto' : 'smooth' }));
+    }
+
+    /* =========================================================
+       3. NAVIGATION
        ========================================================= */
     function initNav() {
         const nav      = document.getElementById('main-nav');
@@ -354,13 +288,12 @@
             document.addEventListener('keydown', e => { if (e.key === 'Escape' && menuOpen()) { setMenu(false); menuBtn.focus(); } });
             document.addEventListener('click', e => { if (menuOpen() && !nav.contains(e.target)) setMenu(false); });
             const wide = window.matchMedia('(min-width: 901px)');
-            const onWide = () => { if (wide.matches) setMenu(false); };
-            if (wide.addEventListener) wide.addEventListener('change', onWide); else wide.addListener(onWide);
+            onMQ(wide, () => { if (wide.matches) setMenu(false); });
         }
     }
 
     /* =========================================================
-       3. ENHANCEMENTS
+       4. ENHANCEMENTS
        ========================================================= */
     // Reveal on scroll — content is visible by default; this only adds the entrance.
     function initReveal() {
@@ -461,7 +394,7 @@
             entries.forEach(e => e.isIntersecting ? covering.add(e.target) : covering.delete(e.target));
             sync();
         });
-        ['download', 'footer'].forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
+        const dl = document.getElementById('download'); if (dl) io.observe(dl);
     }
 
     // ---- Init ----
@@ -472,7 +405,10 @@
         initFAQ();
         initDemoQuiz();
         initGetBar();
-        initStage();
+        initCinematicHero();
+        initFooterReveal();
+        initMagnetic();
+        initBackToTop();
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
