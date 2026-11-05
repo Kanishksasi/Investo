@@ -936,16 +936,7 @@ html.cine .scroll-cue {
 }
 .award-badge-sub { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-muted); letter-spacing: 0.02em; line-height: 1.5; }
 
-/* ---------- 9. Download ---------- */
-.section-download { background: var(--bg2); overflow: hidden; }
-.section-download::before {
-    content: ''; position: absolute; left: 50%; top: 50%;
-    width: min(900px, 120vw); height: 520px; transform: translate(-50%, -50%);
-    background: radial-gradient(ellipse at center, rgba(200,168,75,0.10), transparent 65%);
-    pointer-events: none;
-}
-.section-download .section-inner { position: relative; }
-.section-download .ios-requirement-note { margin-top: 22px; }
+/* ---------- 9. Download notes (now inside the footer) ---------- */
 .pricing-note {
     font-size: 15px; color: var(--text-muted);
     margin-top: 12px; text-align: center;
@@ -1028,7 +1019,7 @@ html.cine .scroll-cue {
     background: var(--bg2);
     border-top: 1px solid var(--border);
     color: var(--text-body);
-    padding: clamp(72px, 9vw, 104px) var(--gutter) 24px;
+    padding: clamp(48px, 6vh, 72px) var(--gutter) 24px;
     display: flex; flex-direction: column;
 }
 .footer-aurora {
@@ -1071,27 +1062,47 @@ html.cine .scroll-cue {
     position: relative; z-index: 2;
     width: 100%; max-width: var(--container); margin: 0 auto;
     display: flex; flex-direction: column; flex: 1;
-    gap: clamp(32px, 5vh, 56px);
+    gap: clamp(18px, 3vh, 28px);
 }
 .footer-top {
     --fr2: 1;
     display: flex; flex-direction: column; align-items: center; text-align: center;
-    gap: clamp(24px, 4vh, 40px);
+    gap: clamp(16px, 2.4vh, 24px);
     opacity: var(--fr2);
     transform: translateY(calc((1 - var(--fr2)) * 50px));
     will-change: transform, opacity;
 }
-.footer-brand { display: flex; flex-direction: column; align-items: center; gap: 18px; max-width: none; }
-.footer-brand .nav-logo-img { height: 56px; }
+.footer-download { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.footer-download .eyebrow-pill { margin-bottom: 12px; }
+.footer-download .section-sub { margin-top: 10px; max-width: 620px; }
+.footer-ask { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px 24px; margin-top: 22px; }
+.footer-ask .download-qr { margin-top: 0; padding: 10px 20px 10px 10px; gap: 16px; }
+.footer-ask .download-qr-code { width: 84px; height: 84px; padding: 6px; }
+.footer .ios-requirement-note { margin-top: 16px; }
+.footer .pricing-note { margin-top: 6px; }
+.footer-brand-row {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 14px 28px;
+    padding-top: clamp(22px, 3vh, 32px);
+    border-top: 1px solid var(--border);
+    width: 100%;
+}
+.footer-brand { display: flex; align-items: center; gap: 14px; max-width: none; }
+.footer-brand .nav-logo-img { height: 44px; }
+.footer-tagline { margin: 0; font-size: 14.5px; color: var(--text-body); }
 .footer-headline {
     margin: 0;
     font-family: var(--font-display); font-weight: 800;
-    font-size: clamp(34px, 5.6vw, 76px); line-height: 1.02; letter-spacing: -0.035em;
+    font-size: clamp(30px, 4.2vw, 56px); line-height: 1.04; letter-spacing: -0.035em;
     text-wrap: balance;
     background: linear-gradient(180deg, var(--cream) 0%, rgba(232,231,187,0.5) 100%);
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 0 20px rgba(232,231,187,0.12));
+}
+.footer-headline .gold {
+    background: linear-gradient(180deg, var(--gold) 0%, rgba(200,168,75,0.55) 100%);
+    -webkit-background-clip: text; background-clip: text;
 }
 .footer-actions { display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .store-buttons-glass { gap: 14px; }
@@ -1116,7 +1127,7 @@ html.cine .scroll-cue {
     box-shadow: 0 20px 40px -10px rgba(8,14,7,0.7), inset 0 1px 1px rgba(232,231,187,0.22);
 }
 .footer .store-btn.magnetic {
-    height: 60px; min-width: 196px; padding: 0 28px 0 22px;
+    height: 62px; min-width: 204px; padding: 0 28px 0 22px;
     border-radius: 999px;
     background: linear-gradient(145deg, rgba(232,231,187,0.07) 0%, rgba(232,231,187,0.02) 100%);
     border: 1px solid rgba(232,231,187,0.14);
@@ -1172,7 +1183,7 @@ html.cine .scroll-cue {
     display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
     gap: 14px 20px;
     border-top: 1px solid var(--border);
-    padding-top: 22px;
+    padding-top: 16px;
 }
 .footer-copy {
     margin: 0;
@@ -1221,9 +1232,30 @@ html.cine-footer .footer-reveal { height: 100vh; clip-path: inset(0); }
 html.cine-footer .footer {
     position: fixed; left: 0; bottom: 0; width: 100%; height: 100vh;
     border-top: none;
-    padding-top: clamp(56px, 8vh, 96px); padding-bottom: 24px;
+    padding-top: clamp(36px, 5vh, 64px); padding-bottom: 20px;
+}
+/* Wide screens: brand and links share one row beneath the download ask */
+@media (min-width: 1024px) {
+    .footer-top { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.3fr) minmax(0, 0.85fr); align-items: start; text-align: left; column-gap: 32px; }
+    .footer-download { grid-column: 1 / -1; }
+    .footer-col-signup { align-items: flex-start; padding-top: clamp(22px, 3vh, 32px); border-top: 1px solid var(--border); }
+    .footer-brand-row { flex-direction: column; align-items: flex-start; gap: 14px; }
+    .footer-brand-row .footer-social { justify-content: flex-start; }
+    .footer-brand-row .footer-pill { padding: 9px 14px; }
+    /* Each link group is one row: label, then its pills */
+    .footer-cols { flex-direction: column; align-items: stretch; gap: 10px; padding-top: clamp(22px, 3vh, 32px); border-top: 1px solid var(--border); }
+    .footer-col { flex-direction: row; align-items: center; gap: 14px; }
+    .footer-col h4 { width: 64px; flex-shrink: 0; }
+    .footer-pills { justify-content: flex-start; }
+    .footer-col-signup { flex-direction: column; gap: 12px; }
+    .footer-col-signup h4 { width: auto; }
+    .footer-col-signup .footer-signup-form { max-width: none; }
 }
 html.cine-footer .footer-inner { min-height: 0; }
+@media (min-width: 1200px) {
+    /* One line for the headline when there is room */
+    .footer-headline br { display: none; }
+}
 html.cine-footer .footer-top { margin: auto 0; }
 
 /* ---------- 10. Reveal on scroll (progressive enhancement) ---------- */
@@ -1359,7 +1391,9 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     .store-btn-text strong { font-size: 16px; }
     .store-buttons-lg .store-btn { height: 58px; min-width: 0; }
     .store-buttons-lg .store-btn-text strong { font-size: 17px; }
-    .footer .store-btn.magnetic { height: 56px; padding: 0 14px; }
+    .footer .store-btn.magnetic { height: 56px; min-width: 0; padding: 0 14px 0 12px; }
+    .footer-download { width: 100%; }
+    .footer-ask { width: 100%; }
 
     .faq-question { padding: 16px 18px; font-size: 15.5px; }
     .faq-answer p { padding: 0 18px 18px; font-size: 15px; }

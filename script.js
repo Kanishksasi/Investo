@@ -175,11 +175,12 @@
        2. MOTION FOOTER
        ========================================================= */
     function initFooterReveal() {
-        const wrap   = document.getElementById('footer-reveal');
+        const wrap   = document.getElementById('download');
+        const footer = document.getElementById('footer');
         const giant  = document.getElementById('footer-giant');
         const top    = document.getElementById('footer-top');
-        if (!wrap || !giant || !top) return;
-        const mq = window.matchMedia('(min-width: 1024px) and (min-height: 720px)');
+        if (!wrap || !footer || !giant || !top) return;
+        const mq = window.matchMedia('(min-width: 1024px)');
         let active = false, queued = false;
 
         function paint() {
@@ -187,13 +188,27 @@
             if (!active) return;
             const r = wrap.getBoundingClientRect();
             const vh = window.innerHeight;
-            const t = clamp01((vh - r.top) / Math.max(1, r.height));
+            // Settles a little before the very bottom, so landing on #download (which keeps the
+            // nav offset) already looks finished
+            const t = clamp01((vh - r.top) / Math.max(1, r.height) / 0.9);
             giant.style.setProperty('--fr', easeOutQuart(t).toFixed(4));
             top.style.setProperty('--fr2', easeOutQuart(clamp01((t - 0.3) / 0.7)).toFixed(4));
         }
         function update() {
-            active = mq.matches && !reduceMotion.matches;
-            document.documentElement.classList.toggle('cine-footer', active);
+            // Curtain only when the whole footer fits on screen; otherwise it is a normal footer
+            const root = document.documentElement;
+            active = false;
+            if (mq.matches && !reduceMotion.matches) {
+                root.classList.add('cine-footer');
+                // In-flow content only: the decorative brand word hangs past the edge on purpose
+                const cs = getComputedStyle(footer);
+                const inner = footer.querySelector('.footer-inner');
+                const bottom = footer.querySelector('.footer-bottom');
+                const gap = inner ? parseFloat(getComputedStyle(inner).rowGap) || 0 : 0;
+                const needed = top.offsetHeight + (bottom ? bottom.offsetHeight : 0) + gap + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+                active = needed <= window.innerHeight + 1;
+            }
+            root.classList.toggle('cine-footer', active);
             if (!active) { giant.style.removeProperty('--fr'); top.style.removeProperty('--fr2'); }
             else paint();
         }
@@ -202,6 +217,8 @@
         onMQ(reduceMotion, update);
         window.addEventListener('scroll', () => { if (active && !queued) { queued = true; requestAnimationFrame(paint); } }, { passive: true });
         window.addEventListener('resize', update, { passive: true });
+        window.addEventListener('load', update);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(update);
     }
 
     // Magnetic pills: nudge toward the cursor, spring back on leave (mouse only)
@@ -377,7 +394,7 @@
             entries.forEach(e => e.isIntersecting ? covering.add(e.target) : covering.delete(e.target));
             sync();
         });
-        ['download', 'footer-reveal'].forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
+        const dl = document.getElementById('download'); if (dl) io.observe(dl);
     }
 
     // ---- Init ----
