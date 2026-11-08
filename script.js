@@ -30,20 +30,21 @@
         if (!hero || !stage) return;
         const copy   = document.getElementById('hero-copy');
         const panel  = document.getElementById('stage-panel');
+        const brand  = document.getElementById('stage-brand');
         const wrap   = document.getElementById('device-wrap');
         const device = document.getElementById('device');
         const tCopy  = document.getElementById('tour-copy');
         const rail   = document.getElementById('tour-rail');
         const tabs   = Array.prototype.slice.call(document.querySelectorAll('#tour-rail .tab'));
         const steps  = Array.prototype.slice.call(document.querySelectorAll('#tour-copy .step'));
-        if (!copy || !panel || !wrap || !device || !tCopy || !rail || !tabs.length) return;
+        if (!copy || !panel || !brand || !wrap || !device || !tCopy || !rail || !tabs.length) return;
 
         const SCREENS = steps.map(s => s.getAttribute('data-screen'));
         const N = steps.length;
 
         // Timeline (fractions of the pinned scroll)
         const SCROLL_VH  = 4.2;                // viewport heights the sequence takes
-        const STEP_START = 0.22, STEP_W = 0.17; // four steps → 0.22 … 0.90
+        const STEP_START = 0.24, STEP_W = 0.165; // four steps → 0.24 … 0.90
         const OUT_START  = 0.93;
 
         const mq = window.matchMedia('(min-width: 1024px) and (min-height: 640px)');
@@ -71,25 +72,27 @@
         const stepProgress = i => STEP_START + (i + 0.5) * STEP_W;
 
         function apply(p) {
-            // Headline steps back
-            const hc = seg(p, 0, 0.12, easeInOutCubic);
-            copy.style.transform = 'translate3d(' + (-5 * hc).toFixed(2) + 'vw,0,0) scale(' + (1 - 0.04 * hc).toFixed(4) + ')';
-            copy.style.opacity = String(1 - hc);
-            copy.style.filter = hc > 0 ? 'blur(' + (14 * hc).toFixed(1) + 'px)' : '';
-            copy.style.visibility = hc >= 1 ? 'hidden' : 'visible';
-            copy.style.pointerEvents = hc > 0.15 ? 'none' : '';
+            // Headline goes soft and recedes *behind* the glass as it rises
+            const hc = seg(p, 0, 0.2, easeInOutCubic);
+            copy.style.transform = 'scale(' + (1 + 0.15 * hc).toFixed(4) + ')';
+            copy.style.opacity = String((1 - 0.8 * hc).toFixed(3));
+            copy.style.filter = hc > 0 ? 'blur(' + (20 * hc).toFixed(1) + 'px)' : '';
+            copy.style.visibility = p >= 0.3 ? 'hidden' : 'visible';
+            copy.style.pointerEvents = p > 0.04 ? 'none' : '';
 
-            // Stage rises, then fills the screen; at the end it settles back like a card being put away
-            const rise   = seg(p, 0.03, 0.17, easeInOutCubic);
-            const expand = seg(p, 0.12, 0.22, easeInOutCubic);
+            // A frosted slab rises over it, then fills the screen and turns solid;
+            // at the end it settles back like a card being put away
+            const rise   = seg(p, 0.02, 0.2, easeInOutCubic);
+            const expand = seg(p, 0.15, 0.25, easeInOutCubic);
             const exit   = seg(p, OUT_START, 1, easeInOutCubic);
-            const scale  = 0.9 + 0.1 * expand - 0.05 * exit;
+            const scale  = 0.86 + 0.14 * expand - 0.05 * exit;
             const radius = 48 * (1 - expand) + 40 * exit;
             panel.style.transform = 'translate3d(0,' + ((1 - rise) * vh * 1.02).toFixed(1) + 'px,0) scale(' + scale.toFixed(4) + ')';
             panel.style.borderRadius = radius.toFixed(1) + 'px';
+            panel.style.setProperty('--solid', expand.toFixed(3));
 
             // Phone: from the hero's right-hand side to the stage's centre
-            const m = seg(p, 0.03, 0.24, easeInOutCubic);
+            const m = seg(p, 0.03, 0.26, easeInOutCubic);
             const x = lerp(0.2 * vw, 0.09 * vw, m);
             const y = lerp(0.06 * vh, 0, m) - 0.1 * vh * exit;
             const s = 1 - 0.06 * exit;                     // never scaled up: keeps the UI crisp
@@ -99,7 +102,10 @@
             device.style.setProperty('--glint', (50 + ry * 2).toFixed(1) + '%');
 
             // Step copy + rail arrive once the stage is full
-            const ui = seg(p, 0.2, 0.27, easeOutQuart) * (1 - exit);
+            const ui = seg(p, 0.24, 0.3, easeOutQuart) * (1 - exit);
+            const bc = seg(p, 0.24, 0.36, easeOutQuart) * (1 - exit);
+            brand.style.opacity = bc.toFixed(3);
+            brand.style.transform = 'translateX(' + (50 * (1 - bc)).toFixed(1) + 'px) scale(' + (0.8 + 0.2 * bc).toFixed(4) + ')';
             tCopy.style.opacity = ui.toFixed(3);
             tCopy.style.transform = 'translate3d(' + (-28 * (1 - ui)).toFixed(1) + 'px,-50%,0)';
             rail.style.opacity = ui.toFixed(3);
@@ -113,7 +119,7 @@
         }
 
         function clearStyles() {
-            [copy, panel, wrap, device, tCopy, rail].forEach(el => el.removeAttribute('style'));
+            [copy, panel, brand, wrap, device, tCopy, rail].forEach(el => el.removeAttribute('style'));
             hero.style.removeProperty('--cine-scroll');
         }
         function tick() {
@@ -189,6 +195,9 @@
             };
             window.addEventListener('pointermove', e => {
                 if (!active || reduceMotion.matches || e.pointerType !== 'mouse') return;
+                const r = panel.getBoundingClientRect();
+                panel.style.setProperty('--mouse-x', (e.clientX - r.left).toFixed(0) + 'px');
+                panel.style.setProperty('--mouse-y', (e.clientY - r.top).toFixed(0) + 'px');
                 tY = (e.clientX / window.innerWidth - 0.5) * 2;
                 tX = (e.clientY / window.innerHeight - 0.5) * 2;
                 if (!tiltRaf && !raf) tiltRaf = requestAnimationFrame(loop);
@@ -337,23 +346,42 @@
         setTimeout(showAll, 3500);               // safety net
     }
 
-    // Figures — the final values are in the HTML; this just counts up to them once.
-    function initCounters() {
+    // Figures — type themselves in, digit by digit, when they scroll into view.
+    // Without JS, with reduced motion, or without IntersectionObserver the final values stay as written.
+    function initTypedFigures() {
         const nums = document.querySelectorAll('.num[data-count-to]');
         if (!nums.length || !('IntersectionObserver' in window) || reduceMotion.matches) return;
-        function animate(el) {
-            const to = parseInt(el.dataset.countTo, 10), suffix = el.dataset.suffix || '';
-            if (isNaN(to)) return;
-            const dur = 1300, t0 = performance.now();
-            (function step(now) {
-                const t = Math.min(1, (now - t0) / dur);
-                el.textContent = (t < 1 ? Math.round(to * (1 - Math.pow(1 - t, 3))) : to) + suffix;
-                if (t < 1) requestAnimationFrame(step);
-            })(t0);
+
+        nums.forEach(el => {
+            const text = (el.dataset.countTo || '') + (el.dataset.suffix || '');
+            el.textContent = '';
+            const sr = document.createElement('span'); sr.className = 'sr-only'; sr.textContent = text; el.appendChild(sr);
+            text.split('').forEach(ch => {
+                const s = document.createElement('span'); s.className = 'tch'; s.setAttribute('aria-hidden', 'true'); s.textContent = ch; el.appendChild(s);
+            });
+        });
+
+        function type(el, startDelay) {
+            const chars = el.querySelectorAll('.tch');
+            let i = 0, prev = null;
+            const next = () => {
+                if (prev) prev.classList.remove('caret');
+                if (i >= chars.length) { setTimeout(() => prev && prev.classList.remove('caret'), 1400); return; }
+                prev = chars[i++]; prev.classList.add('on', 'caret');
+                setTimeout(next, 130 + Math.random() * 90);        // a little human wobble
+            };
+            setTimeout(next, startDelay);
         }
+        const group = [];
         const obs = new IntersectionObserver(entries => {
-            entries.forEach(e => { if (e.isIntersecting) { animate(e.target); obs.unobserve(e.target); } });
-        }, { threshold: 0.5 });
+            entries.forEach(e => {
+                if (!e.isIntersecting) return;
+                obs.unobserve(e.target);
+                type(e.target, group.length * 380);               // figures start one after another
+                group.push(e.target);
+                setTimeout(() => { const k = group.indexOf(e.target); if (k > -1) group.splice(k, 1); }, 1200);
+            });
+        }, { threshold: 0.6 });
         nums.forEach(el => obs.observe(el));
     }
 
@@ -505,7 +533,7 @@
     function init() {
         initNav();
         initReveal();
-        initCounters();
+        initTypedFigures();
         initFAQ();
         initQuiz();
         initSignup();

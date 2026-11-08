@@ -246,9 +246,20 @@ svg.i, .i {
 /* Tour: tabs → step copy → phone */
 .tour {
     max-width: var(--wrap); margin: 0 auto;
-    padding: 12px var(--gutter) clamp(56px, 8vw, 104px);
+    padding: 12px var(--gutter) clamp(96px, 16vw, 170px);
     display: grid; gap: 22px; grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "device" "rail" "copy";
+    position: relative; isolation: isolate; overflow: clip;
+}
+/* The giant outlined wordmark: sits behind the phone, cropped by the bottom edge */
+.stage-brand {
+    position: absolute; z-index: -1; left: 50%; bottom: -.13em; margin: 0; transform: translateX(-50%);
+    pointer-events: none; user-select: none; white-space: nowrap;
+    font-family: var(--font-display); font-variation-settings: 'SOFT' 100; font-weight: 700;
+    font-size: min(23vw, 300px); line-height: .8; letter-spacing: -0.05em;
+    color: transparent; -webkit-text-stroke: 1px rgba(232, 231, 187, 0.1);
+    background: linear-gradient(180deg, rgba(232, 231, 187, 0.16) 0%, transparent 68%);
+    -webkit-background-clip: text; background-clip: text;
 }
 .tour-rail {
     grid-area: rail; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
@@ -325,18 +336,29 @@ html.cine .stage-glow {
 html.cine .hero-copy {
     position: absolute; inset: 0; z-index: 3; max-width: none; margin: 0;
     display: flex; align-items: center; padding: var(--nav-h) var(--gutter) 0;
-    transform-origin: 0 50%; will-change: transform, filter, opacity;
+    transform-origin: 30% 50%; will-change: transform, filter, opacity;
 }
 html.cine .hero-copy-inner { width: 100%; max-width: calc(var(--wrap) - 2 * var(--gutter)); margin: 0 auto; }
 html.cine .hero-title { font-size: clamp(44px, 5.5vw, 92px); max-width: min(62%, 740px); }
 html.cine .stage-panel {
-    display: block; position: absolute; inset: 0; z-index: 4; pointer-events: none;
-    background: radial-gradient(95% 105% at 64% 46%, #1D4C23 0%, #123019 46%, #0A1B0E 100%);
+    /* Frosted green glass laid over the headline: translucent while it rises (the blurred
+       headline shows through), solid by the time it fills the screen (--solid is set by script.js). */
+    --solid: 0;
+    display: block; position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; overflow: clip;
+    background: radial-gradient(95% 105% at 64% 46%,
+        rgb(29 76 35 / calc(0.62 + 0.38 * var(--solid))) 0%,
+        rgb(18 48 25 / calc(0.7 + 0.3 * var(--solid))) 46%,
+        rgb(10 27 14 / calc(0.78 + 0.22 * var(--solid))) 100%);
     border-radius: 48px; transform: translate3d(0, 100vh, 0);
-    box-shadow: inset 0 1px 0 rgba(232, 231, 187, 0.14), 0 -50px 120px rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 1px 1px rgba(232, 231, 187, 0.2), inset 0 -2px 6px rgba(0, 0, 0, 0.55), 0 -50px 120px rgba(0, 0, 0, 0.5);
     will-change: transform, border-radius;
 }
-html.cine .tour { position: absolute; inset: 0; z-index: 5; display: block; max-width: none; padding: 0; pointer-events: none; }
+.stage-sheen {   /* soft highlight that follows the cursor across the glass */
+    position: absolute; inset: 0; border-radius: inherit; pointer-events: none; mix-blend-mode: screen;
+    background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(232, 231, 187, 0.08) 0%, transparent 40%);
+}
+html.cine .tour { position: absolute; inset: 0; z-index: 5; display: block; max-width: none; padding: 0; pointer-events: none; overflow: visible; }
+html.cine .stage-brand { left: auto; right: 2.2vw; bottom: -4.5%; transform: none; font-size: clamp(120px, 19vw, 300px); opacity: 0; transform-origin: 100% 100%; will-change: transform, opacity; }
 html.cine .tour > * { pointer-events: auto; }
 html.cine .device-wrap {
     position: absolute; left: 50%; top: 50%; width: var(--pw); height: auto; overflow: visible;
@@ -552,6 +574,13 @@ html.cine .step-title { font-size: clamp(34px, 3.5vw, 56px); }
 .figure:nth-child(even) { padding-left: 28px; }
 .figure dt { font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
 .figure .num { font-family: var(--font-display); font-weight: 500; font-variation-settings: 'SOFT' 100; font-size: clamp(48px, 5.2vw, 76px); line-height: .95; letter-spacing: -.035em; color: var(--gold); font-variant-numeric: lining-nums tabular-nums; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* Figures type themselves in, digit by digit (script.js). The characters are laid out from the start, so nothing shifts. */
+.tch { position: relative; display: inline-block; opacity: 0; }
+.tch.on { opacity: 1; }
+.tch.caret::after { content: ''; position: absolute; left: 100%; top: .1em; bottom: .06em; width: .045em; margin-left: .03em; background: var(--gold); animation: caret-blink .8s steps(1) infinite; }
+@keyframes caret-blink { 50% { opacity: 0; } }
 
 .topics { border-top: 1px solid var(--line); }
 .topic {
