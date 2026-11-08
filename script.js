@@ -1,12 +1,12 @@
 /* =============================================
    INVESTO — Site behaviour
-   1. Cinematic hero: on large screens the hero pins while the scroll position
-      plays the sequence (headline → the card with the real app and its callouts
-      → the download ask). Scrolling is never intercepted; it only drives the
-      timeline. Smaller screens, reduced motion and no-JS get a plain stack.
-   2. Motion footer: curtain reveal, scroll-linked parallax, magnetic pills.
-   3. Navigation (hide on scroll, mobile menu, reading progress)
-   4. Enhancements: reveal-on-scroll, stat count-up, FAQ, quiz, phone bar
+   1. Hero + product tour: on large screens the hero pins while the scroll position
+      plays it (headline → the green stage rises → the phone walks through four
+      screens). Scrolling is never intercepted; it only drives the timeline.
+      Smaller screens, reduced motion and no-JS get a plain stack with tabs.
+   2. Navigation (solid on scroll, hide on scroll down, mobile menu, progress)
+   3. Motion footer: curtain reveal, scroll-linked wordmark, magnetic buttons
+   4. Enhancements: reveal-on-scroll, count-up, FAQ, the live quiz, phone bar
    ============================================= */
 (function () {
     'use strict';
@@ -16,163 +16,241 @@
     const onMQ = (mq, fn) => { if (mq.addEventListener) mq.addEventListener('change', fn); else mq.addListener(fn); };
 
     const clamp01 = v => Math.max(0, Math.min(1, v));
+    const lerp = (a, b, t) => a + (b - a) * t;
     const seg = (p, a, b, ease) => { const t = clamp01((p - a) / (b - a)); return ease ? ease(t) : t; };
     const easeInOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    const easeInCubic    = t => t * t * t;
     const easeOutQuart   = t => 1 - Math.pow(1 - t, 4);
-    const easeOutExpo    = t => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-    const easeInOutExpo  = t => t === 0 ? 0 : t === 1 ? 1 : t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2;
-    const easeOutBack    = t => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
 
     /* =========================================================
-       1. CINEMATIC HERO
+       1. HERO + PRODUCT TOUR
        ========================================================= */
-    function initCinematicHero() {
-        const hero  = document.getElementById('hero');
-        const pin   = document.getElementById('cine-pin');
-        if (!hero || !pin) return;
-        const text  = document.getElementById('copy-hero');
-        const cta   = document.getElementById('copy-final-cta');
-        const card  = document.getElementById('cine-card');
-        const phone = document.getElementById('cine-phone');
-        const phoneImg = document.getElementById('cine-phone-img');
-        const copy  = document.getElementById('copy-explode');
-        const brand = document.getElementById('cine-brand');
-        const cue   = document.getElementById('scroll-cue');
-        const nodes = Array.prototype.slice.call(document.querySelectorAll('#copy-diagram .diagram-node'));
-        if (!text || !cta || !card || !phone || !copy || !brand) return;
+    function initTour() {
+        const hero   = document.getElementById('hero');
+        const stage  = document.getElementById('stage');
+        if (!hero || !stage) return;
+        const copy   = document.getElementById('hero-copy');
+        const panel  = document.getElementById('stage-panel');
+        const wrap   = document.getElementById('device-wrap');
+        const device = document.getElementById('device');
+        const tCopy  = document.getElementById('tour-copy');
+        const rail   = document.getElementById('tour-rail');
+        const tabs   = Array.prototype.slice.call(document.querySelectorAll('#tour-rail .tab'));
+        const steps  = Array.prototype.slice.call(document.querySelectorAll('#tour-copy .step'));
+        if (!copy || !panel || !wrap || !device || !tCopy || !rail || !tabs.length) return;
 
-        const SCROLL_VH = 2.8;               // how many viewport heights the sequence takes
+        const SCREENS = steps.map(s => s.getAttribute('data-screen'));
+        const N = steps.length;
+
+        // Timeline (fractions of the pinned scroll)
+        const SCROLL_VH  = 4.2;                // viewport heights the sequence takes
+        const STEP_START = 0.22, STEP_W = 0.17; // four steps → 0.22 … 0.90
+        const OUT_START  = 0.93;
+
         const mq = window.matchMedia('(min-width: 1024px) and (min-height: 640px)');
-        let active = false, target = 0, shown = 0, raf = null, vh = window.innerHeight;
+        let active = false, target = 0, shown = 0, raf = null, vh = window.innerHeight, vw = window.innerWidth;
+        let current = -1;
+        let tiltX = 0, tiltY = 0, tX = 0, tY = 0, tiltRaf = null;
 
-        function progressFromScroll() {
-            const top = hero.getBoundingClientRect().top + window.scrollY;
-            return clamp01((window.scrollY - top) / (vh * SCROLL_VH));
+        /* ----- shared: which step / screen is showing ----- */
+        function setStep(i) {
+            if (i === current) return;
+            current = i;
+            steps.forEach((s, k) => s.classList.toggle('is-active', k === i));
+            tabs.forEach((t, k) => {
+                const on = k === i;
+                t.classList.toggle('is-active', on);
+                t.setAttribute('aria-selected', on ? 'true' : 'false');
+                t.tabIndex = on ? 0 : -1;
+            });
+            device.setAttribute('data-screen', i >= 0 ? SCREENS[i] : 'home');
         }
 
+        /* ----- cinematic mode ----- */
+        function heroTop() { return hero.getBoundingClientRect().top + window.scrollY; }
+        function progressFromScroll() { return clamp01((window.scrollY - heroTop()) / (vh * SCROLL_VH)); }
+        const stepProgress = i => STEP_START + (i + 0.5) * STEP_W;
+
         function apply(p) {
-            // Headline recedes
-            const t1 = seg(p, 0, 0.18, easeInOutCubic);
-            text.style.transform = 'scale(' + (1 + 0.15 * t1) + ')';
-            text.style.filter = 'blur(' + (20 * t1) + 'px)';
-            text.style.opacity = String(1 - 0.8 * t1);
-            text.style.visibility = p >= 0.66 ? 'hidden' : 'visible';
-            text.style.pointerEvents = p > 0.06 ? 'none' : '';
-            if (cue) { cue.style.visibility = p > 0.06 ? 'hidden' : ''; }
+            // Headline steps back
+            const hc = seg(p, 0, 0.12, easeInOutCubic);
+            copy.style.transform = 'translate3d(' + (-5 * hc).toFixed(2) + 'vw,0,0) scale(' + (1 - 0.04 * hc).toFixed(4) + ')';
+            copy.style.opacity = String(1 - hc);
+            copy.style.filter = hc > 0 ? 'blur(' + (14 * hc).toFixed(1) + 'px)' : '';
+            copy.style.visibility = hc >= 1 ? 'hidden' : 'visible';
+            copy.style.pointerEvents = hc > 0.15 ? 'none' : '';
 
-            // Card rises, fills the screen, later pulls back and leaves
-            const rise   = seg(p, 0.00, 0.20, easeInOutCubic);
-            const expand = seg(p, 0.18, 0.30, easeInOutCubic);
-            const pull   = seg(p, 0.72, 0.83, easeInOutExpo);
-            const fly    = seg(p, 0.83, 0.95, easeInCubic);
-            const size   = 85 + 15 * expand - 15 * pull;
-            const radius = 40 * (1 - expand) + 40 * pull;
-            const cardY  = (vh + 200) * (1 - rise) - (vh + 300) * fly;
-            card.style.transform = 'translate3d(0,' + cardY.toFixed(1) + 'px,0)';
-            card.style.width = size + 'vw';
-            card.style.height = size + 'vh';
-            card.style.borderRadius = radius + 'px';
-            card.style.opacity = String(1 - 0.6 * pull);   // the ask shows through as the card steps back
-            card.style.visibility = p >= 0.999 ? 'hidden' : 'visible';
+            // Stage rises, then fills the screen; at the end it settles back like a card being put away
+            const rise   = seg(p, 0.03, 0.17, easeInOutCubic);
+            const expand = seg(p, 0.12, 0.22, easeInOutCubic);
+            const exit   = seg(p, OUT_START, 1, easeInOutCubic);
+            const scale  = 0.9 + 0.1 * expand - 0.05 * exit;
+            const radius = 48 * (1 - expand) + 40 * exit;
+            panel.style.transform = 'translate3d(0,' + ((1 - rise) * vh * 1.02).toFixed(1) + 'px,0) scale(' + scale.toFixed(4) + ')';
+            panel.style.borderRadius = radius.toFixed(1) + 'px';
 
-            // Inside the card: phone, callouts, tagline, brand
-            const out = seg(p, 0.66, 0.73, easeInCubic);
-            const m   = seg(p, 0.22, 0.42, easeOutExpo);
-            phone.style.opacity = String(m * (1 - out));
-            phone.style.transform =
-                'translateY(' + (300 * (1 - m) - 40 * out) + 'px) translateZ(' + (-500 * (1 - m) - 200 * out) + 'px) ' +
-                'rotateX(' + (50 * (1 - m)) + 'deg) rotateY(' + (-30 * (1 - m)) + 'deg) scale(' + ((0.6 + 0.4 * m) * (1 - 0.1 * out)) + ')';
-            nodes.forEach((n, i) => {
-                const ni = seg(p, 0.30 + i * 0.025, 0.44 + i * 0.025, easeOutBack);
-                n.style.opacity = String(clamp01(ni) * (1 - out));
-                n.style.transform = 'translateY(' + (100 * (1 - ni) - 40 * out) + 'px) scale(' + ((0.7 + 0.3 * ni) * (1 - 0.1 * out)) + ') rotate(' + (-10 * (1 - ni)) + 'deg)';
-            });
-            const c = seg(p, 0.40, 0.52, easeOutQuart);
-            copy.style.opacity = String(c * (1 - out));
-            copy.style.transform = 'translate(' + (-50 * (1 - c)) + 'px,' + (-40 * out) + 'px)';
-            brand.style.opacity = String(c * (1 - out));
-            brand.style.transform = 'translateX(' + (50 * (1 - c)) + 'px) scale(' + (0.8 + 0.2 * c) + ')';
+            // Phone: from the hero's right-hand side to the stage's centre
+            const m = seg(p, 0.03, 0.24, easeInOutCubic);
+            const x = lerp(0.2 * vw, 0.09 * vw, m);
+            const y = lerp(0.06 * vh, 0, m) - 0.1 * vh * exit;
+            const s = 1 - 0.06 * exit;                     // never scaled up: keeps the UI crisp
+            wrap.style.transform = 'translate3d(calc(-50% + ' + x.toFixed(1) + 'px), calc(-50% + ' + y.toFixed(1) + 'px),0) scale(' + s.toFixed(4) + ')';
+            const ry = lerp(-17, 0, m) + tiltY * 7, rx = lerp(6, 0, m) - tiltX * 5, rz = lerp(2.2, 0, m);
+            device.style.transform = 'rotateY(' + ry.toFixed(2) + 'deg) rotateX(' + rx.toFixed(2) + 'deg) rotateZ(' + rz.toFixed(2) + 'deg)';
+            device.style.setProperty('--glint', (50 + ry * 2).toFixed(1) + '%');
 
-            // The closing ask waits behind the card, then is uncovered
-            const show = p >= 0.66;
-            cta.style.visibility = show ? 'visible' : 'hidden';
-            cta.style.opacity = show ? '1' : '0';
-            cta.style.transform = 'scale(' + (0.8 + 0.2 * pull) + ')';
-            cta.style.filter = 'blur(' + (30 * (1 - pull)) + 'px)';
-            cta.style.pointerEvents = p > 0.9 ? 'auto' : 'none';
+            // Step copy + rail arrive once the stage is full
+            const ui = seg(p, 0.2, 0.27, easeOutQuart) * (1 - exit);
+            tCopy.style.opacity = ui.toFixed(3);
+            tCopy.style.transform = 'translate3d(' + (-28 * (1 - ui)).toFixed(1) + 'px,-50%,0)';
+            rail.style.opacity = ui.toFixed(3);
+            rail.style.transform = 'translate3d(' + (28 * (1 - ui)).toFixed(1) + 'px,-50%,0)';
+            tCopy.style.pointerEvents = rail.style.pointerEvents = ui < 0.5 ? 'none' : '';
+
+            // Which step?
+            let idx = -1;
+            if (p >= STEP_START - 0.015) idx = Math.max(0, Math.min(N - 1, Math.floor((p - STEP_START) / STEP_W)));
+            setStep(idx);
         }
 
         function clearStyles() {
-            [text, cta, card, phone, copy, brand, cue].concat(nodes).forEach(el => { if (el) el.removeAttribute('style'); });
-            if (phoneImg) phoneImg.removeAttribute('style');
+            [copy, panel, wrap, device, tCopy, rail].forEach(el => el.removeAttribute('style'));
             hero.style.removeProperty('--cine-scroll');
         }
-
         function tick() {
             raf = null;
             const d = target - shown;
-            if (Math.abs(d) < 0.0005) { shown = target; apply(shown); return; }
-            shown += d * 0.16;                 // soft scrub, like a 1s lag
+            if (Math.abs(d) < 0.0004) { shown = target; apply(shown); return; }
+            shown += d * 0.16;                  // soft scrub, like a short lag
             apply(shown);
             raf = requestAnimationFrame(tick);
         }
         function onScroll() {
             if (!active) return;
             target = progressFromScroll();
-            if (reduceMotion.matches) { shown = target; apply(shown); return; }
             if (!raf) raf = requestAnimationFrame(tick);
         }
-
         function enable() {
             if (active) return;
             active = true;
             document.documentElement.classList.add('cine');
-            vh = window.innerHeight;
+            vh = window.innerHeight; vw = window.innerWidth;
             hero.style.setProperty('--cine-scroll', (SCROLL_VH * 100) + 'vh');
+            current = -2;                         // force a refresh
             target = shown = progressFromScroll();
             apply(shown);
         }
         function disable() {
-            if (!active) return;
+            if (!active && current !== -1) return;
             active = false;
             if (raf) { cancelAnimationFrame(raf); raf = null; }
             document.documentElement.classList.remove('cine');
             clearStyles();
+            const keep = current >= 0 ? current : 0;
+            current = -2;
+            setStep(keep);
         }
         function update() { if (mq.matches && !reduceMotion.matches) enable(); else disable(); }
 
+        /* ----- tabs (both modes) ----- */
+        function go(i) {
+            if (active) {
+                const y = heroTop() + stepProgress(i) * vh * SCROLL_VH;
+                window.scrollTo({ top: y, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+            } else {
+                setStep(i);
+            }
+        }
+        tabs.forEach((t, i) => t.addEventListener('click', () => go(i)));
+        rail.addEventListener('keydown', e => {
+            const keys = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+            if (!(e.key in keys)) return;
+            e.preventDefault();
+            const i = Math.max(0, (current < 0 ? 0 : current)) + keys[e.key];
+            const next = (i + N) % N;
+            go(next); tabs[next].focus();
+        });
+
+        /* ----- init ----- */
+        setStep(0);
         update();
         onMQ(mq, update);
         onMQ(reduceMotion, update);
         window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', () => { vh = window.innerHeight; if (active) { target = shown = progressFromScroll(); apply(shown); } }, { passive: true });
+        window.addEventListener('resize', () => { vh = window.innerHeight; vw = window.innerWidth; if (active) { target = shown = progressFromScroll(); apply(shown); } }, { passive: true });
         window.addEventListener('pageshow', () => { if (active) { target = shown = progressFromScroll(); apply(shown); } });
 
-        // Pointer: the card's sheen follows the cursor and the phone tilts a little
+        // Pointer: the phone leans a little toward the cursor
         if (finePointer.matches) {
-            let tx = 0, ty = 0, cx = 0, cy = 0, tiltRaf = null;
-            function tiltTick() {
+            const loop = () => {
                 tiltRaf = null;
-                cx += (tx - cx) * 0.08; cy += (ty - cy) * 0.08;
-                if (phoneImg) phoneImg.style.transform = 'rotateY(' + (cx * 12).toFixed(2) + 'deg) rotateX(' + (-cy * 12).toFixed(2) + 'deg)';
-                if (Math.abs(tx - cx) > 0.001 || Math.abs(ty - cy) > 0.001) tiltRaf = requestAnimationFrame(tiltTick);
-            }
+                tiltX += (tX - tiltX) * 0.07; tiltY += (tY - tiltY) * 0.07;
+                if (active) apply(shown);
+                if (Math.abs(tX - tiltX) > 0.002 || Math.abs(tY - tiltY) > 0.002) tiltRaf = requestAnimationFrame(loop);
+            };
             window.addEventListener('pointermove', e => {
                 if (!active || reduceMotion.matches || e.pointerType !== 'mouse') return;
-                if (window.scrollY > vh * (SCROLL_VH + 1)) return;
-                const r = card.getBoundingClientRect();
-                card.style.setProperty('--mouse-x', (e.clientX - r.left) + 'px');
-                card.style.setProperty('--mouse-y', (e.clientY - r.top) + 'px');
-                tx = (e.clientX / window.innerWidth - 0.5) * 2;
-                ty = (e.clientY / window.innerHeight - 0.5) * 2;
-                if (!tiltRaf) tiltRaf = requestAnimationFrame(tiltTick);
+                tY = (e.clientX / window.innerWidth - 0.5) * 2;
+                tX = (e.clientY / window.innerHeight - 0.5) * 2;
+                if (!tiltRaf && !raf) tiltRaf = requestAnimationFrame(loop);
             }, { passive: true });
         }
     }
 
     /* =========================================================
-       2. MOTION FOOTER
+       2. NAVIGATION
+       ========================================================= */
+    function initNav() {
+        const nav      = document.getElementById('main-nav');
+        const progress = document.getElementById('scroll-progress');
+        const menuBtn  = document.getElementById('nav-menu-btn');
+        const menu     = document.getElementById('nav-menu');
+        if (!nav) return;
+        let lastY = window.scrollY, queued = false;
+        const compact = window.matchMedia('(max-width: 820px)');
+
+        const menuOpen = () => menu && !menu.hidden;
+        function setMenu(open) {
+            if (!menu || !menuBtn) return;
+            menu.hidden = !open;
+            nav.classList.toggle('is-open', open);
+            menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+            if (open) nav.classList.remove('nav--hidden');
+        }
+        function paint() {
+            queued = false;
+            const y = window.scrollY;
+            nav.classList.toggle('is-solid', y > 24);
+            // Phones hide the bar while reading (the bottom download bar keeps a store in reach);
+            // wider screens keep it, so the store buttons are always one click away.
+            const dy = y - lastY;
+            if (!compact.matches) nav.classList.remove('nav--hidden');
+            else if (!menuOpen()) {
+                // Only react to real movement, so a decelerating smooth-scroll never flips the bar back
+                if (dy > 2 && y > 160) nav.classList.add('nav--hidden');
+                else if (dy < -2 || y <= 160) nav.classList.remove('nav--hidden');
+            }
+            if (Math.abs(dy) > 2 || y <= 160) lastY = y;
+            if (progress) {
+                const max = document.documentElement.scrollHeight - window.innerHeight;
+                progress.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, y / max) : 0) + ')';
+            }
+        }
+        window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(paint); } }, { passive: true });
+        paint();
+
+        if (menuBtn && menu) {
+            menuBtn.addEventListener('click', () => setMenu(!menuOpen()));
+            menu.addEventListener('click', e => { if (e.target.closest('a')) setMenu(false); });
+            document.addEventListener('keydown', e => { if (e.key === 'Escape' && menuOpen()) { setMenu(false); menuBtn.focus(); } });
+            document.addEventListener('click', e => { if (menuOpen() && !nav.contains(e.target)) setMenu(false); });
+            const wide = window.matchMedia('(min-width: 901px)');
+            onMQ(wide, () => { if (wide.matches) setMenu(false); });
+        }
+    }
+
+    /* =========================================================
+       3. MOTION FOOTER
        ========================================================= */
     function initFooterReveal() {
         const wrap   = document.getElementById('download');
@@ -188,8 +266,7 @@
             if (!active) return;
             const r = wrap.getBoundingClientRect();
             const vh = window.innerHeight;
-            // Settles a little before the very bottom, so landing on #download (which keeps the
-            // nav offset) already looks finished
+            // Settles a little before the very bottom, so landing on #download already looks finished
             const t = clamp01((vh - r.top) / Math.max(1, r.height) / 0.9);
             giant.style.setProperty('--fr', easeOutQuart(t).toFixed(4));
             top.style.setProperty('--fr2', easeOutQuart(clamp01((t - 0.3) / 0.7)).toFixed(4));
@@ -200,7 +277,6 @@
             active = false;
             if (mq.matches && !reduceMotion.matches) {
                 root.classList.add('cine-footer');
-                // In-flow content only: the decorative brand word hangs past the edge on purpose
                 const cs = getComputedStyle(footer);
                 const inner = footer.querySelector('.footer-inner');
                 const bottom = footer.querySelector('.footer-bottom');
@@ -221,22 +297,19 @@
         if (document.fonts && document.fonts.ready) document.fonts.ready.then(update);
     }
 
-    // Magnetic pills: nudge toward the cursor, spring back on leave (mouse only)
+    // Magnetic buttons: nudge toward the cursor, spring back on leave (mouse only)
     function initMagnetic() {
         if (!finePointer.matches || reduceMotion.matches) return;
         document.querySelectorAll('.magnetic').forEach(el => {
             el.addEventListener('pointermove', e => {
                 if (e.pointerType !== 'mouse') return;
                 const r = el.getBoundingClientRect();
-                const x = e.clientX - r.left - r.width / 2;
-                const y = e.clientY - r.top - r.height / 2;
-                el.style.setProperty('--mx', (x * 0.35).toFixed(1) + 'px');
-                el.style.setProperty('--my', (y * 0.35).toFixed(1) + 'px');
+                el.style.setProperty('--mx', ((e.clientX - r.left - r.width / 2) * 0.28).toFixed(1) + 'px');
+                el.style.setProperty('--my', ((e.clientY - r.top - r.height / 2) * 0.28).toFixed(1) + 'px');
                 el.classList.add('is-mag');
             });
             el.addEventListener('pointerleave', () => {
-                el.style.setProperty('--mx', '0px');
-                el.style.setProperty('--my', '0px');
+                el.style.setProperty('--mx', '0px'); el.style.setProperty('--my', '0px');
                 el.classList.remove('is-mag');
             });
         });
@@ -246,50 +319,6 @@
         const btn = document.getElementById('footer-top-btn');
         if (!btn) return;
         btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'auto' : 'smooth' }));
-    }
-
-    /* =========================================================
-       3. NAVIGATION
-       ========================================================= */
-    function initNav() {
-        const nav      = document.getElementById('main-nav');
-        const progress = document.getElementById('scroll-progress');
-        const menuBtn  = document.getElementById('nav-menu-btn');
-        const menu     = document.getElementById('nav-menu');
-        if (!nav) return;
-        let lastY = window.scrollY;
-        let queued = false;
-
-        function menuOpen() { return menu && !menu.hidden; }
-        function setMenu(open) {
-            if (!menu || !menuBtn) return;
-            menu.hidden = !open;
-            menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-            menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-            if (open) nav.classList.remove('nav--hidden');
-        }
-
-        function paint() {
-            queued = false;
-            const y = window.scrollY;
-            if (!menuOpen()) nav.classList.toggle('nav--hidden', y > lastY && y > 140);
-            lastY = y;
-            if (progress) {
-                const max = document.documentElement.scrollHeight - window.innerHeight;
-                progress.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, y / max) : 0) + ')';
-            }
-        }
-        window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(paint); } }, { passive: true });
-        paint();
-
-        if (menuBtn && menu) {
-            menuBtn.addEventListener('click', () => setMenu(!menuOpen()));
-            menu.addEventListener('click', e => { if (e.target.closest('a')) setMenu(false); });
-            document.addEventListener('keydown', e => { if (e.key === 'Escape' && menuOpen()) { setMenu(false); menuBtn.focus(); } });
-            document.addEventListener('click', e => { if (menuOpen() && !nav.contains(e.target)) setMenu(false); });
-            const wide = window.matchMedia('(min-width: 901px)');
-            onMQ(wide, () => { if (wide.matches) setMenu(false); });
-        }
     }
 
     /* =========================================================
@@ -305,32 +334,26 @@
             entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); } });
         }, { threshold: 0.08, rootMargin: '0px 0px -24px 0px' });
         els.forEach(el => obs.observe(el));
-        // Safety net: nothing stays hidden if the observer never fires
-        setTimeout(showAll, 2500);
+        setTimeout(showAll, 3500);               // safety net
     }
 
-    // Stat counters — the final values are in the HTML; this just counts up to them once.
-    function initStatCounters() {
-        const nums = document.querySelectorAll('.stat-num[data-count-to]');
+    // Figures — the final values are in the HTML; this just counts up to them once.
+    function initCounters() {
+        const nums = document.querySelectorAll('.num[data-count-to]');
         if (!nums.length || !('IntersectionObserver' in window) || reduceMotion.matches) return;
-
         function animate(el) {
-            const target = parseInt(el.dataset.countTo, 10);
-            const suffix = el.dataset.suffix || '';
-            if (isNaN(target)) return;
-            const duration = 1100;
-            const t0 = performance.now();
-            function step(now) {
-                const t = Math.min(1, (now - t0) / duration);
-                const eased = 1 - Math.pow(1 - t, 3);
-                el.textContent = (t < 1 ? Math.round(target * eased) : target) + suffix;
+            const to = parseInt(el.dataset.countTo, 10), suffix = el.dataset.suffix || '';
+            if (isNaN(to)) return;
+            const dur = 1300, t0 = performance.now();
+            (function step(now) {
+                const t = Math.min(1, (now - t0) / dur);
+                el.textContent = (t < 1 ? Math.round(to * (1 - Math.pow(1 - t, 3))) : to) + suffix;
                 if (t < 1) requestAnimationFrame(step);
-            }
-            requestAnimationFrame(step);
+            })(t0);
         }
         const obs = new IntersectionObserver(entries => {
             entries.forEach(e => { if (e.isIntersecting) { animate(e.target); obs.unobserve(e.target); } });
-        }, { threshold: 0.4 });
+        }, { threshold: 0.5 });
         nums.forEach(el => obs.observe(el));
     }
 
@@ -346,50 +369,131 @@
                     const oi = other.closest('.faq-item');
                     if (oi) oi.classList.remove('open');
                 });
-                if (!isOpen) {
-                    btn.setAttribute('aria-expanded', 'true');
-                    if (item) item.classList.add('open');
-                }
+                if (!isOpen) { btn.setAttribute('aria-expanded', 'true'); if (item) item.classList.add('open'); }
             });
         });
     }
 
-    // Interactive demo — Daily Challenge quiz
-    function initDemoQuiz() {
-        const options  = document.querySelectorAll('.demo-option');
-        const feedback = document.getElementById('demo-feedback');
-        if (!options.length || !feedback) return;
+    // The live Daily Challenge — three real finance calls, reasoning explained either way
+    function initQuiz() {
+        const root = document.getElementById('quiz');
+        if (!root) return;
+        const $ = id => document.getElementById(id);
+        const elQ = $('quiz-q'), elOpts = $('quiz-options'), elFb = $('quiz-feedback'), elNext = $('quiz-next');
+        const elCount = $('quiz-count'), elXp = $('quiz-xp'), elSteps = $('quiz-steps').children;
+        const elBody = $('quiz-body'), elDone = $('quiz-done'), elScore = $('quiz-score'), elMsg = $('quiz-msg');
+        const XP = 35;
 
-        options.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const wasCorrect = btn.dataset.correct === 'true';
-                options.forEach(opt => {
-                    opt.disabled = true;
-                    if (opt.dataset.correct === 'true') opt.classList.add('is-correct');
-                    else if (opt === btn) opt.classList.add('is-incorrect');
-                });
-                feedback.textContent = wasCorrect
-                    ? '+35 XP — nice! That\'s exactly the kind of call the app helps you build a habit around.'
-                    : 'Not quite — the highlighted answer is the one that keeps your safety net intact while still letting you enjoy some of it.';
-            }, { once: true });
+        const QUESTIONS = [
+            { q: 'You get $50 for your birthday. You already have a $200 emergency fund and no debt. What’s the smartest first move?',
+              o: ['Spend it all right away — you earned it', 'Split it: save some, spend some on something you’ll actually value', 'Lend it to a friend who says they’ll pay you back'], a: 1,
+              yes: 'Your safety net is already covered, so a mix keeps things balanced: some for later, some to enjoy.',
+              no: 'The best answer keeps your safety net intact while still letting you enjoy some of it.' },
+            { q: 'You put $100 in an account that earns 10% a year, and the interest stays in the account. How much do you have after 2 years?',
+              o: ['$110', '$120', '$121'], a: 2,
+              yes: 'Year two’s interest is earned on $110, not just the original $100. That’s compounding.',
+              no: 'Year one adds $10, making $110. Year two earns 10% on $110 — that’s $11 — so you land on $121. Interest earning interest is compounding.' },
+            { q: 'What does your credit score mostly tell lenders?',
+              o: ['How reliably you’ve paid back what you’ve borrowed', 'How much money you earn', 'How much money you’ve saved'], a: 0,
+              yes: 'Scores are built from things like paying on time and how much of your limit you use — not income or savings.',
+              no: 'It’s a track record of borrowing: paying on time, how much of your limit you use, and how long you’ve been at it. Income and savings don’t count.' }
+        ];
+        const total = QUESTIONS.length;
+        let idx = 0, score = 0, answered = false;
+
+        const icon = id => '<svg class="i" aria-hidden="true"><use href="#' + id + '"/></svg>';
+        function setSteps() {
+            Array.prototype.forEach.call(elSteps, (s, i) => { s.className = i < idx ? 'is-done' : (i === idx ? 'is-now' : ''); });
+        }
+        function render() {
+            const item = QUESTIONS[idx];
+            answered = false;
+            elCount.textContent = 'Question ' + (idx + 1) + ' of ' + total;
+            elQ.textContent = item.q;
+            elFb.textContent = ''; elFb.className = 'quiz-feedback';
+            elNext.hidden = true;
+            elOpts.innerHTML = '';
+            item.o.forEach((text, i) => {
+                const b = document.createElement('button');
+                b.type = 'button'; b.className = 'quiz-option'; b.dataset.i = String(i);
+                b.innerHTML = '<span class="quiz-mark">' + icon('i-check') + '</span><span class="quiz-text"></span>';
+                b.querySelector('.quiz-text').textContent = text;
+                b.addEventListener('click', e => choose(i, e.detail === 0));
+                elOpts.appendChild(b);
+            });
+            setSteps();
+        }
+        function choose(i, viaKeyboard) {
+            if (answered) return;
+            answered = true;
+            const item = QUESTIONS[idx], ok = i === item.a;
+            if (ok) { score++; elXp.textContent = (score * XP) + ' XP'; elXp.classList.remove('pop'); void elXp.offsetWidth; elXp.classList.add('pop'); }
+            Array.prototype.forEach.call(elOpts.children, (b, k) => {
+                b.disabled = true;
+                const mark = b.querySelector('.quiz-mark');
+                if (k === item.a) { b.classList.add('is-correct'); mark.innerHTML = icon('i-check'); }
+                else if (k === i) { b.classList.add('is-wrong'); mark.innerHTML = icon('i-x'); }
+                else b.classList.add('is-dim');
+            });
+            elFb.className = 'quiz-feedback ' + (ok ? 'ok' : 'no');
+            elFb.innerHTML = '<strong></strong><span></span>';
+            elFb.querySelector('strong').textContent = ok ? 'Nice call. +' + XP + ' XP' : 'Not quite.';
+            elFb.querySelector('span').textContent = ok ? item.yes : item.no;
+            elNext.innerHTML = (idx === total - 1 ? 'See your score ' : 'Next question ') + icon('i-arrow-r');
+            elNext.hidden = false;
+            if (viaKeyboard) elNext.focus({ preventScroll: true });
+        }
+        function finish() {
+            root.style.minHeight = root.offsetHeight + 'px';   // the card keeps its height, so the page never jumps
+            idx = total; setSteps();
+            elBody.hidden = true; elDone.hidden = false;
+            elScore.innerHTML = score + '/' + total + '<small>' + (score * XP) + ' XP</small>';
+            elMsg.textContent = score === total
+                ? 'A perfect run. This is the kind of thinking the app helps you turn into a habit — one good money decision a day.'
+                : score > 0
+                    ? 'Solid — and you now know exactly why the other one tripped you up. That’s what the lessons are for.'
+                    : 'Everyone starts somewhere. That’s literally what the lessons are for — and nothing here costs a cent.';
+        }
+        elNext.addEventListener('click', () => { if (idx < total - 1) { idx++; render(); } else finish(); });
+        $('quiz-reset').addEventListener('click', () => {
+            idx = 0; score = 0; elXp.textContent = '0 XP';
+            elDone.hidden = true; elBody.hidden = false; render();
+            root.style.minHeight = '';
+        });
+        render();
+    }
+
+    // Email list — posts in place (Netlify Forms) and confirms right where you typed
+    function initSignup() {
+        const form = document.getElementById('footer-signup-form');
+        const note = document.getElementById('footer-signup-note');
+        if (!form || !note || !window.fetch) return;
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            const btn = form.querySelector('button');
+            btn.disabled = true; note.className = 'signup-note';
+            fetch(form.getAttribute('action') || '/', {
+                method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(new FormData(form)).toString()
+            }).then(r => {
+                if (!r.ok) throw new Error(String(r.status));
+                form.reset(); note.textContent = 'You\u2019re on the list. Thanks!'; note.className = 'signup-note is-ok';
+            }).catch(() => {
+                note.textContent = 'Couldn\u2019t sign you up just now \u2014 please try again, or email investo.team@bruxelacademy.com.'; note.className = 'signup-note is-err';
+            }).then(() => { btn.disabled = false; });
         });
     }
 
-    // Phone download bar — shown once past the hero, hidden while a section that
-    // already has store buttons (Download, footer) is on screen.
+    // Phone download bar — shown once the hero's own store buttons have scrolled away,
+    // hidden while the download section is on screen.
     function initGetBar() {
         const bar  = document.getElementById('get-bar');
-        const hero = document.getElementById('hero');
-        if (!bar || !hero || !('IntersectionObserver' in window)) return;
+        const copy = document.getElementById('hero-copy');
+        if (!bar || !copy || !('IntersectionObserver' in window)) return;
         const covering = new Set();
-        let pastHero = false;
-        const sync = () => bar.classList.toggle('show', pastHero && covering.size === 0);
-
-        new IntersectionObserver(([e]) => {
-            pastHero = !e.isIntersecting && e.boundingClientRect.top < 0;
-            sync();
-        }).observe(hero);
-
+        let past = false;
+        const sync = () => bar.classList.toggle('show', past && covering.size === 0);
+        new IntersectionObserver(([e]) => { past = !e.isIntersecting && e.boundingClientRect.top < 0; sync(); }).observe(copy);
         const io = new IntersectionObserver(entries => {
             entries.forEach(e => e.isIntersecting ? covering.add(e.target) : covering.delete(e.target));
             sync();
@@ -401,16 +505,16 @@
     function init() {
         initNav();
         initReveal();
-        initStatCounters();
+        initCounters();
         initFAQ();
-        initDemoQuiz();
+        initQuiz();
+        initSignup();
         initGetBar();
-        initCinematicHero();
+        initTour();
         initFooterReveal();
         initMagnetic();
         initBackToTop();
     }
-
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();
 })();
