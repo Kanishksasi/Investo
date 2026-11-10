@@ -6,7 +6,8 @@
       Smaller screens, reduced motion and no-JS get a plain stack with tabs.
    2. Navigation (solid on scroll, hide on scroll down, mobile menu, progress)
    3. Motion footer: curtain reveal, scroll-linked wordmark, magnetic buttons
-   4. Enhancements: reveal-on-scroll, count-up, FAQ, the live quiz, phone bar
+   4. Enhancements: headline typing, split headings, reveal-on-scroll, typed figures,
+      FAQ, the live quiz, phone bar
    ============================================= */
 (function () {
     'use strict';
@@ -35,6 +36,7 @@
         const device = document.getElementById('device');
         const tCopy  = document.getElementById('tour-copy');
         const rail   = document.getElementById('tour-rail');
+        const dim    = document.getElementById('stage-dim');
         const tabs   = Array.prototype.slice.call(document.querySelectorAll('#tour-rail .tab'));
         const steps  = Array.prototype.slice.call(document.querySelectorAll('#tour-copy .step'));
         if (!copy || !panel || !brand || !wrap || !device || !tCopy || !rail || !tabs.length) return;
@@ -44,6 +46,7 @@
 
         // Timeline (fractions of the pinned scroll)
         const SCROLL_VH  = 4.2;                // viewport heights the sequence takes
+        const COVER_VH   = 1;                  // then the next section rises over the pinned stage (matches --cover)
         const STEP_START = 0.24, STEP_W = 0.165; // four steps → 0.24 … 0.90
         const OUT_START  = 0.93;
 
@@ -68,10 +71,14 @@
 
         /* ----- cinematic mode ----- */
         function heroTop() { return hero.getBoundingClientRect().top + window.scrollY; }
-        function progressFromScroll() { return clamp01((window.scrollY - heroTop()) / (vh * SCROLL_VH)); }
+        // 0 → 1 across the tour, then on to (SCROLL_VH + COVER_VH) / SCROLL_VH while the next section covers the stage
+        const MAX_S = (SCROLL_VH + COVER_VH) / SCROLL_VH;
+        function progressFromScroll() { return Math.max(0, Math.min(MAX_S, (window.scrollY - heroTop()) / (vh * SCROLL_VH))); }
         const stepProgress = i => STEP_START + (i + 0.5) * STEP_W;
 
-        function apply(p) {
+        function apply(s) {
+            const p = clamp01(s);
+            const q = clamp01((s - 1) * SCROLL_VH / COVER_VH);       // the cover phase
             // Headline goes soft and recedes *behind* the glass as it rises
             const hc = seg(p, 0, 0.2, easeInOutCubic);
             copy.style.transform = 'scale(' + (1 + 0.15 * hc).toFixed(4) + ')';
@@ -94,9 +101,10 @@
             // Phone: from the hero's right-hand side to the stage's centre
             const m = seg(p, 0.03, 0.26, easeInOutCubic);
             const x = lerp(0.2 * vw, 0.09 * vw, m);
-            const y = lerp(0.06 * vh, 0, m) - 0.1 * vh * exit;
-            const s = 1 - 0.06 * exit;                     // never scaled up: keeps the UI crisp
-            wrap.style.transform = 'translate3d(calc(-50% + ' + x.toFixed(1) + 'px), calc(-50% + ' + y.toFixed(1) + 'px),0) scale(' + s.toFixed(4) + ')';
+            const y = lerp(0.06 * vh, 0, m) - 0.1 * vh * exit - 0.12 * vh * easeInOutCubic(q);
+            const sc = 1 - 0.06 * exit - 0.05 * q;         // never scaled up: keeps the UI crisp
+            wrap.style.transform = 'translate3d(calc(-50% + ' + x.toFixed(1) + 'px), calc(-50% + ' + y.toFixed(1) + 'px),0) scale(' + sc.toFixed(4) + ')';
+            wrap.style.opacity = q > 0 ? (1 - 0.7 * q).toFixed(3) : '';
             const ry = lerp(-17, 0, m) + tiltY * 7, rx = lerp(6, 0, m) - tiltX * 5, rz = lerp(2.2, 0, m);
             device.style.transform = 'rotateY(' + ry.toFixed(2) + 'deg) rotateX(' + rx.toFixed(2) + 'deg) rotateZ(' + rz.toFixed(2) + 'deg)';
             device.style.setProperty('--glint', (50 + ry * 2).toFixed(1) + '%');
@@ -112,6 +120,12 @@
             rail.style.transform = 'translate3d(' + (28 * (1 - ui)).toFixed(1) + 'px,-50%,0)';
             tCopy.style.pointerEvents = rail.style.pointerEvents = ui < 0.5 ? 'none' : '';
 
+            // The next section rises over the stage: it settles back, rounds off and dims beneath
+            const qe = easeInOutCubic(q);
+            stage.style.transform = q > 0 ? 'scale(' + (1 - 0.08 * qe).toFixed(4) + ')' : '';
+            stage.style.borderRadius = q > 0 ? (44 * qe).toFixed(1) + 'px' : '';
+            if (dim) dim.style.opacity = (0.78 * qe).toFixed(3);
+
             // Which step?
             let idx = -1;
             if (p >= STEP_START - 0.015) idx = Math.max(0, Math.min(N - 1, Math.floor((p - STEP_START) / STEP_W)));
@@ -119,7 +133,7 @@
         }
 
         function clearStyles() {
-            [copy, panel, brand, wrap, device, tCopy, rail].forEach(el => el.removeAttribute('style'));
+            [stage, copy, panel, brand, wrap, device, tCopy, rail, dim].forEach(el => el && el.removeAttribute('style'));
             hero.style.removeProperty('--cine-scroll');
         }
         function tick() {
@@ -140,7 +154,7 @@
             active = true;
             document.documentElement.classList.add('cine');
             vh = window.innerHeight; vw = window.innerWidth;
-            hero.style.setProperty('--cine-scroll', (SCROLL_VH * 100) + 'vh');
+            hero.style.setProperty('--cine-scroll', ((SCROLL_VH + COVER_VH) * 100) + 'vh');
             current = -2;                         // force a refresh
             target = shown = progressFromScroll();
             apply(shown);
@@ -335,15 +349,159 @@
        ========================================================= */
     // Reveal on scroll — content is visible by default; this only adds the entrance.
     function initReveal() {
-        const els = document.querySelectorAll('.reveal');
+        const els = document.querySelectorAll('.reveal, .split');
         if (!els.length) return;
         const showAll = () => els.forEach(el => el.classList.add('in-view'));
         if (!('IntersectionObserver' in window) || reduceMotion.matches) { showAll(); return; }
+
+        // Siblings arrive one after another instead of all at once
+        const seen = new Map();
+        els.forEach(el => {
+            if (!el.classList.contains('reveal')) return;
+            const n = seen.get(el.parentElement) || 0;
+            seen.set(el.parentElement, n + 1);
+            if (n) el.style.setProperty('--d', Math.min(n, 5) * 90 + 'ms');
+        });
+
         const obs = new IntersectionObserver(entries => {
-            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); } });
-        }, { threshold: 0.08, rootMargin: '0px 0px -24px 0px' });
+            entries.forEach(e => {
+                if (!e.isIntersecting) return;
+                const el = e.target;
+                el.classList.add('in-view');
+                obs.unobserve(el);
+                if (el.style.getPropertyValue('--d')) setTimeout(() => el.style.removeProperty('--d'), 1800);   // hover transitions shouldn't inherit the stagger
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
         els.forEach(el => obs.observe(el));
-        setTimeout(showAll, 3500);               // safety net
+        setTimeout(showAll, 6000);               // safety net
+    }
+
+    // Headings: split into words so each can rise out of its own clipped line.
+    // The real text stays in the DOM (spaces and all), so it still reads and copies normally.
+    function initSplitHeadings() {
+        if (reduceMotion.matches || !('IntersectionObserver' in window)) return;
+        document.querySelectorAll('.h2:not(.footer-h)').forEach(h => {
+            let k = 0;
+            const walk = node => {
+                Array.prototype.slice.call(node.childNodes).forEach(n => {
+                    if (n.nodeType === 3) {
+                        const frag = document.createDocumentFragment();
+                        n.textContent.split(/(\s+)/).forEach(tok => {
+                            if (!tok) return;
+                            if (/^\s+$/.test(tok)) { frag.appendChild(document.createTextNode(' ')); return; }
+                            const w = document.createElement('span'); w.className = 'w';
+                            const wi = document.createElement('span'); wi.className = 'wi'; wi.style.setProperty('--k', String(k++)); wi.textContent = tok;
+                            w.appendChild(wi); frag.appendChild(w);
+                        });
+                        n.parentNode.replaceChild(frag, n);
+                    } else if (n.nodeType === 1) walk(n);
+                });
+            };
+            walk(h);
+            h.classList.add('split');
+        });
+    }
+
+    // Hero headline: typed in, character by character, with a gold caret.
+    // Everything under it waits until it lands. Reduced motion (and no JS) just shows the text.
+    function initHeroType() {
+        const root = document.documentElement;
+        const title = document.getElementById('hero-heading');
+        const copy = document.getElementById('hero-copy');
+        if (!title || !copy) { root.classList.remove('typing'); return; }
+        if (reduceMotion.matches) { root.classList.remove('typing'); return; }
+
+        const plain = title.textContent.replace(/\s+/g, ' ').trim();
+        const chars = [];
+        const walk = node => {
+            Array.prototype.slice.call(node.childNodes).forEach(n => {
+                if (n.nodeType === 3) {
+                    const frag = document.createDocumentFragment();
+                    n.textContent.split(/(\s+)/).forEach(tok => {
+                        if (!tok) return;
+                        if (/^\s+$/.test(tok)) { frag.appendChild(document.createTextNode(' ')); return; }
+                        const w = document.createElement('span'); w.className = 'tw';
+                        tok.split('').forEach(ch => {
+                            const c = document.createElement('span'); c.className = 'tch'; c.textContent = ch; w.appendChild(c); chars.push(c);
+                        });
+                        frag.appendChild(w);
+                    });
+                    n.parentNode.replaceChild(frag, n);
+                } else if (n.nodeType === 1) walk(n);
+            });
+        };
+        const lineStarts = new Set();
+        title.querySelectorAll('.hl').forEach(line => { lineStarts.add(chars.length); walk(line); line.setAttribute('aria-hidden', 'true'); });
+        const sr = document.createElement('span'); sr.className = 'sr-only'; sr.textContent = plain; title.insertBefore(sr, title.firstChild);
+
+        let done = false, timer = null, i = 0, prev = null;
+        function finish() {
+            if (done) return;
+            done = true; clearTimeout(timer);
+            chars.forEach(c => { c.classList.add('on'); c.classList.remove('caret'); });
+            copy.classList.add('is-typed');
+        }
+        function step() {
+            if (done) return;
+            if (prev) prev.classList.remove('caret');
+            if (i >= chars.length) {
+                // hold the caret for a beat, then bring in the rest
+                prev.classList.add('caret');
+                timer = setTimeout(() => { prev.classList.remove('caret'); finish(); }, 520);
+                return;
+            }
+            prev = chars[i++]; prev.classList.add('on', 'caret');
+            const ch = prev.textContent;
+            // a little human wobble; a longer breath at the end of a phrase
+            let wait = 46 + Math.random() * 38;
+            if (lineStarts.has(i)) wait += 190;
+            if (ch === ',') wait += 120;
+            timer = setTimeout(step, wait);
+        }
+        function start() {
+            title.classList.add('is-built');
+            timer = setTimeout(step, 380);
+        }
+        // Scrolling away shouldn't leave a half-typed headline behind
+        window.addEventListener('scroll', () => { if (!done && window.scrollY > 40) finish(); }, { passive: true });
+        // Wait for the display face so wrapping is final before anything is typed
+        let started = false;
+        const go = () => { if (!started) { started = true; start(); } };
+        if (document.fonts && document.fonts.ready) { document.fonts.ready.then(go); setTimeout(go, 1200); } else go();
+    }
+
+    // Slow, gentle drift: the practice card and the 6th-place number move a touch against the scroll
+    function initDrift() {
+        if (reduceMotion.matches || !finePointer.matches && window.innerWidth < 1024) return;
+        const items = Array.prototype.slice.call(document.querySelectorAll('[data-drift]'));
+        if (!items.length) return;
+        let queued = false;
+        function paint() {
+            queued = false;
+            const vh = window.innerHeight;
+            items.forEach(el => {
+                const r = el.getBoundingClientRect();
+                if (r.bottom < -200 || r.top > vh + 200) return;
+                const t = (r.top + r.height / 2 - vh / 2) / vh;          // -1 … 1 around the middle of the screen
+                el.style.translate = '0 ' + (t * parseFloat(el.dataset.drift)).toFixed(1) + 'px';
+            });
+        }
+        window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(paint); } }, { passive: true });
+        window.addEventListener('resize', paint, { passive: true });
+        paint();
+    }
+
+    // Glass cards: the glare follows the cursor
+    function initGlare() {
+        if (!finePointer.matches || reduceMotion.matches) return;
+        document.querySelectorAll('.pf').forEach(el => {
+            el.addEventListener('pointermove', e => {
+                if (e.pointerType !== 'mouse') return;
+                const r = el.getBoundingClientRect();
+                el.style.setProperty('--mouse-x', (e.clientX - r.left).toFixed(0) + 'px');
+                el.style.setProperty('--mouse-y', (e.clientY - r.top).toFixed(0) + 'px');
+            }, { passive: true });
+        });
     }
 
     // Figures — type themselves in, digit by digit, when they scroll into view.
@@ -531,7 +689,9 @@
 
     // ---- Init ----
     function init() {
+        initHeroType();
         initNav();
+        initSplitHeadings();
         initReveal();
         initTypedFigures();
         initFAQ();
@@ -542,6 +702,8 @@
         initFooterReveal();
         initMagnetic();
         initBackToTop();
+        initDrift();
+        initGlare();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();
