@@ -1,7 +1,7 @@
 /* =============================================
-   INVESTO — Site behaviour
+   INVESTO site behaviour
    1. Hero + product tour: on large screens the hero pins while the scroll position
-      plays it (headline → the green stage rises → the phone walks through four
+      plays it (headline, then the glass slab rises, then the phone walks through four
       screens). Scrolling is never intercepted; it only drives the timeline.
       Smaller screens, reduced motion and no-JS get a plain stack with tabs.
    2. Navigation (solid on scroll, hide on scroll down, mobile menu, progress)
@@ -355,7 +355,7 @@
     /* =========================================================
        4. ENHANCEMENTS
        ========================================================= */
-    // Reveal on scroll — content is visible by default; this only adds the entrance.
+    // Reveal on scroll: content is visible by default; this only adds the entrance.
     function initReveal() {
         const els = document.querySelectorAll('.reveal, .split');
         if (!els.length) return;
@@ -478,79 +478,121 @@
         if (document.fonts && document.fonts.ready) { document.fonts.ready.then(go); setTimeout(go, 1200); } else go();
     }
 
-    // Parallax. Layers travel at different rates, so the page has depth:
-    //   [data-px="n"]   n px of extra travel across the screen (positive = faster than the page,
-    //                   negative = slower). Zero at the middle of the screen, so nothing is ever off-grid there.
-    //   .sheet          the section beneath a rising sheet lags, sinks and dims as it is covered.
-    //   #pf-card        the practice chart is drawn by the scroll position (--draw).
-    // Parallax is desktop only and never runs with reduced motion; the chart scrub runs everywhere
-    // that allows motion. Everything uses the `translate` property, so it never fights a transform.
-    function initParallax() {
-        const wide = window.matchMedia('(min-width: 1024px)');
-        const items = Array.prototype.slice.call(document.querySelectorAll('[data-px]'));
-        const sheets = Array.prototype.slice.call(document.querySelectorAll('.sheet'))
-            .map(sec => ({ sec, under: sec.previousElementSibling && sec.previousElementSibling.querySelector('.wrap') }))
-            .filter(o => o.under);
-        const pf = document.getElementById('pf-card');
-        let pxOn = false, scrubOn = false, queued = false;
+    // Pinned scenes. Two sections hold the screen while the scroll position drives them:
+    //   #inside    the lesson reel: vertical scroll becomes sideways travel
+    //   #practice  the practice story: scroll draws the chart, and each beat takes over as the line reaches it
+    // Both are plain stacks without JS, on phones and tablets, and with reduced motion.
+    function initScenes() {
+        const root  = document.documentElement;
+        const pan   = document.getElementById('inside');
+        const track = document.getElementById('pan-track');
+        const fill  = document.getElementById('pan-fill');
+        const story = document.getElementById('practice');
+        if (!(pan && track) && !story) return;
+        const mq = window.matchMedia('(min-width: 1024px) and (min-height: 640px)');
+        let on = false, queued = false, panDist = 0, lastBeat = 0;
 
-        function reset() {
-            items.forEach(el => { el.style.translate = ''; el._ty = 0; });
-            sheets.forEach(o => { o.under.style.translate = ''; o.under.style.opacity = ''; });
+        // The line and its fill are revealed left to right by the same x clip, so they cannot drift apart.
+        // A small pen dot rides the tip: read the line's own vertices once to know how high the tip is at any x.
+        const linePath = story && story.querySelector('.ss-line');
+        const verts = [];
+        if (linePath) {
+            const n = (linePath.getAttribute('d') || '').match(/-?\d+(?:\.\d+)?/g) || [];
+            for (let i = 0; i + 1 < n.length; i += 2) verts.push([parseFloat(n[i]) / 1200, parseFloat(n[i + 1]) / 400]);
+        }
+        const yAt = x => {
+            for (let i = 1; i < verts.length; i++) {
+                if (x <= verts[i][0]) { const t = (x - verts[i - 1][0]) / Math.max(1e-6, verts[i][0] - verts[i - 1][0]); return verts[i - 1][1] + (verts[i][1] - verts[i - 1][1]) * t; }
+            }
+            return verts.length ? verts[verts.length - 1][1] : 0.1;
+        };
+
+        function measure() {
+            if (!on) return;
+            if (pan && track) {
+                // The track is as wide as its panels; the scroll length is exactly how far it has to travel
+                track.style.transform = 'translate3d(0,0,0)';
+                panDist = Math.max(0, track.scrollWidth - window.innerWidth);
+                pan.style.height = (window.innerHeight + panDist) + 'px';
+            }
+            paint();
+        }
+        function progress(el) {
+            const r = el.getBoundingClientRect();
+            return clamp01(-r.top / Math.max(1, r.height - window.innerHeight));
         }
         function paint() {
             queued = false;
-            const vh = window.innerHeight;
-            if (pxOn) {
-                items.forEach(el => {
-                    const r = el.getBoundingClientRect();
-                    const ty = el._ty || 0;
-                    if (r.bottom - ty < -400 || r.top - ty > vh + 400) return;
-                    const t = (r.top - ty + r.height / 2 - vh / 2) / vh;       // -1 … 1 around the middle of the screen
-                    el._ty = t * parseFloat(el.dataset.px);
-                    el.style.translate = '0 ' + el._ty.toFixed(1) + 'px';
-                });
-                sheets.forEach(o => {
-                    const top = o.sec.getBoundingClientRect().top;
-                    const k = clamp01((vh - top) / vh);                         // 0 as the sheet appears … 1 once it covers the screen
-                    o.under.style.translate = '0 ' + (k * 56).toFixed(1) + 'px';
-                    o.under.style.opacity = (1 - 0.42 * k).toFixed(3);
-                });
+            if (!on) return;
+            if (pan && track) {
+                const p = progress(pan);
+                track.style.transform = 'translate3d(' + (-p * panDist).toFixed(1) + 'px,0,0)';
+                if (fill) fill.style.transform = 'scaleX(' + p.toFixed(4) + ')';
             }
-            if (scrubOn && pf) {
-                const d = clamp01((vh * 0.9 - (pf.getBoundingClientRect().top - (pf._ty || 0))) / (vh * 0.55));
-                pf.style.setProperty('--draw', (d * d * (3 - 2 * d)).toFixed(4));
+            if (story) {
+                const d = seg(progress(story), 0.05, 0.92);
+                story.style.setProperty('--draw', d.toFixed(4));
+                story.style.setProperty('--peny', yAt(d).toFixed(4));
+                const beat = d < 0.28 ? 1 : d < 0.58 ? 2 : d < 0.86 ? 3 : 4;
+                if (beat !== lastBeat) { lastBeat = beat; story.setAttribute('data-beat', String(beat)); }
             }
         }
         function update() {
-            const wasPx = pxOn;
-            pxOn = wide.matches && !reduceMotion.matches;
-            scrubOn = !reduceMotion.matches;
-            if (wasPx && !pxOn) reset();
-            if (!scrubOn && pf) pf.style.removeProperty('--draw');
+            const should = mq.matches && !reduceMotion.matches;
+            if (should === on) { if (on) measure(); return; }
+            on = should;
+            root.classList.toggle('scenes', on);
+            if (on) { measure(); return; }
+            if (pan) pan.style.height = '';
+            if (track) track.style.transform = '';
+            if (story) { story.style.removeProperty('--draw'); story.style.removeProperty('--peny'); story.setAttribute('data-beat', '1'); lastBeat = 0; }
+        }
+        update();
+        onMQ(mq, update); onMQ(reduceMotion, update);
+        window.addEventListener('scroll', () => { if (on && !queued) { queued = true; requestAnimationFrame(paint); } }, { passive: true });
+        window.addEventListener('resize', update, { passive: true });
+        window.addEventListener('load', measure);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+    }
+
+    // Parallax. Layers travel at different rates, so the page has depth:
+    //   [data-px="n"]  n px of extra travel across the screen (positive = faster than the page,
+    //                  negative = slower). Zero at the middle of the screen, so nothing is off-grid there.
+    // Desktop only, and never with reduced motion. It uses the `translate` property, so it never fights a transform.
+    function initParallax() {
+        const wide = window.matchMedia('(min-width: 1024px)');
+        const items = Array.prototype.slice.call(document.querySelectorAll('[data-px]'));
+        if (!items.length) return;
+        let on = false, queued = false;
+
+        function reset() { items.forEach(el => { el.style.translate = ''; el._ty = 0; }); }
+        function paint() {
+            queued = false;
+            if (!on) return;
+            const vh = window.innerHeight;
+            items.forEach(el => {
+                const r = el.getBoundingClientRect();
+                const ty = el._ty || 0;
+                if (r.bottom - ty < -400 || r.top - ty > vh + 400) return;
+                const t = (r.top - ty + r.height / 2 - vh / 2) / vh;        // -1 ... 1 around the middle of the screen
+                el._ty = t * parseFloat(el.dataset.px);
+                el.style.translate = '0 ' + el._ty.toFixed(1) + 'px';
+            });
+        }
+        function update() {
+            const was = on;
+            on = wide.matches && !reduceMotion.matches;
+            if (was && !on) reset();
             paint();
         }
         update();
         onMQ(wide, update); onMQ(reduceMotion, update);
-        window.addEventListener('scroll', () => { if ((pxOn || scrubOn) && !queued) { queued = true; requestAnimationFrame(paint); } }, { passive: true });
-        window.addEventListener('resize', () => { if (pxOn || scrubOn) paint(); }, { passive: true });
+        window.addEventListener('scroll', () => { if (on && !queued) { queued = true; requestAnimationFrame(paint); } }, { passive: true });
+        window.addEventListener('resize', () => { if (on) paint(); }, { passive: true });
         window.addEventListener('load', paint);
     }
 
-    // Glass cards: the glare follows the cursor
-    function initGlare() {
-        if (!finePointer.matches || reduceMotion.matches) return;
-        document.querySelectorAll('.pf').forEach(el => {
-            el.addEventListener('pointermove', e => {
-                if (e.pointerType !== 'mouse') return;
-                const r = el.getBoundingClientRect();
-                el.style.setProperty('--mouse-x', (e.clientX - r.left).toFixed(0) + 'px');
-                el.style.setProperty('--mouse-y', (e.clientY - r.top).toFixed(0) + 'px');
-            }, { passive: true });
-        });
-    }
-
-    // Figures — type themselves in, digit by digit, when they scroll into view.
+    // Figures: type themselves in, digit by digit, when they scroll into view.
     // Without JS, with reduced motion, or without IntersectionObserver the final values stay as written.
     function initTypedFigures() {
         const nums = document.querySelectorAll('.num[data-count-to]');
@@ -589,24 +631,7 @@
         nums.forEach(el => obs.observe(el));
     }
 
-    // FAQ accordion — single open item, proper expanded state
-    function initFAQ() {
-        const buttons = document.querySelectorAll('.faq-question');
-        buttons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const item = btn.closest('.faq-item');
-                const isOpen = btn.getAttribute('aria-expanded') === 'true';
-                buttons.forEach(other => {
-                    other.setAttribute('aria-expanded', 'false');
-                    const oi = other.closest('.faq-item');
-                    if (oi) oi.classList.remove('open');
-                });
-                if (!isOpen) { btn.setAttribute('aria-expanded', 'true'); if (item) item.classList.add('open'); }
-            });
-        });
-    }
-
-    // The live Daily Challenge — three real finance calls, reasoning explained either way
+    // The live Daily Challenge: three real finance calls, reasoning explained either way
     function initQuiz() {
         const root = document.getElementById('quiz');
         if (!root) return;
@@ -618,16 +643,16 @@
 
         const QUESTIONS = [
             { q: 'You get $50 for your birthday. You already have a $200 emergency fund and no debt. What’s the smartest first move?',
-              o: ['Spend it all right away — you earned it', 'Split it: save some, spend some on something you’ll actually value', 'Lend it to a friend who says they’ll pay you back'], a: 1,
+              o: ['Spend it all right away, you earned it', 'Split it: save some, spend some on something you’ll actually value', 'Lend it to a friend who says they’ll pay you back'], a: 1,
               yes: 'Your safety net is already covered, so a mix keeps things balanced: some for later, some to enjoy.',
               no: 'The best answer keeps your safety net intact while still letting you enjoy some of it.' },
             { q: 'You put $100 in an account that earns 10% a year, and the interest stays in the account. How much do you have after 2 years?',
               o: ['$110', '$120', '$121'], a: 2,
               yes: 'Year two’s interest is earned on $110, not just the original $100. That’s compounding.',
-              no: 'Year one adds $10, making $110. Year two earns 10% on $110 — that’s $11 — so you land on $121. Interest earning interest is compounding.' },
+              no: 'Year one adds $10, making $110. Year two earns 10% on $110, which is $11, so you land on $121. Interest earning interest is compounding.' },
             { q: 'What does your credit score mostly tell lenders?',
               o: ['How reliably you’ve paid back what you’ve borrowed', 'How much money you earn', 'How much money you’ve saved'], a: 0,
-              yes: 'Scores are built from things like paying on time and how much of your limit you use — not income or savings.',
+              yes: 'Scores are built from things like paying on time and how much of your limit you use, not income or savings.',
               no: 'It’s a track record of borrowing: paying on time, how much of your limit you use, and how long you’ve been at it. Income and savings don’t count.' }
         ];
         const total = QUESTIONS.length;
@@ -681,10 +706,10 @@
             elBody.hidden = true; elDone.hidden = false;
             elScore.innerHTML = score + '/' + total + '<small>' + (score * XP) + ' XP</small>';
             elMsg.textContent = score === total
-                ? 'A perfect run. This is the kind of thinking the app helps you turn into a habit — one good money decision a day.'
+                ? 'A perfect run. This is the kind of thinking the app helps you turn into a habit, one good money decision a day.'
                 : score > 0
-                    ? 'Solid — and you now know exactly why the other one tripped you up. That’s what the lessons are for.'
-                    : 'Everyone starts somewhere. That’s literally what the lessons are for — and nothing here costs a cent.';
+                    ? 'Solid. You now know exactly why the other one tripped you up. That’s what the lessons are for.'
+                    : 'Everyone starts somewhere. That’s literally what the lessons are for, and nothing here costs a cent.';
         }
         elNext.addEventListener('click', () => { if (idx < total - 1) { idx++; render(); } else finish(); });
         $('quiz-reset').addEventListener('click', () => {
@@ -695,7 +720,7 @@
         render();
     }
 
-    // Email list — posts in place (Netlify Forms) and confirms right where you typed
+    // Email list: posts in place (Netlify Forms) and confirms right where you typed
     function initSignup() {
         const form = document.getElementById('footer-signup-form');
         const note = document.getElementById('footer-signup-note');
@@ -711,12 +736,12 @@
                 if (!r.ok) throw new Error(String(r.status));
                 form.reset(); note.textContent = 'You\u2019re on the list. Thanks!'; note.className = 'signup-note is-ok';
             }).catch(() => {
-                note.textContent = 'Couldn\u2019t sign you up just now \u2014 please try again, or email investo.team@bruxelacademy.com.'; note.className = 'signup-note is-err';
+                note.textContent = 'Couldn\u2019t sign you up just now. Please try again, or email investo.team@bruxelacademy.com.'; note.className = 'signup-note is-err';
             }).then(() => { btn.disabled = false; });
         });
     }
 
-    // Phone download bar — shown once the hero's own store buttons have scrolled away,
+    // Phone download bar: shown once the hero's own store buttons have scrolled away,
     // hidden while the download section is on screen.
     function initGetBar() {
         const bar  = document.getElementById('get-bar');
@@ -740,7 +765,6 @@
         initSplitHeadings();
         initReveal();
         initTypedFigures();
-        initFAQ();
         initQuiz();
         initSignup();
         initGetBar();
@@ -748,8 +772,8 @@
         initFooterReveal();
         initMagnetic();
         initBackToTop();
+        initScenes();
         initParallax();
-        initGlare();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();
