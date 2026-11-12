@@ -38,6 +38,7 @@
         const rail   = document.getElementById('tour-rail');
         const dim    = document.getElementById('stage-dim');
         const glow   = stage.querySelector('.stage-glow');
+        const coins  = Array.prototype.slice.call(document.querySelectorAll('.fcoin')).map(el => ({ el, d: parseFloat(el.dataset.d) || 1, ph: parseFloat(el.dataset.ph) || 0, y0: parseFloat(el.dataset.y) || 50 }));
         const tabs   = Array.prototype.slice.call(document.querySelectorAll('#tour-rail .tab'));
         const steps  = Array.prototype.slice.call(document.querySelectorAll('#tour-copy .step'));
         if (!copy || !panel || !brand || !wrap || !device || !tCopy || !rail || !tabs.length) return;
@@ -133,6 +134,20 @@
             stage.style.transform = q > 0 ? 'scale(' + (1 - 0.08 * qe).toFixed(4) + ')' : '';
             stage.style.borderRadius = q > 0 ? (44 * qe).toFixed(1) + 'px' : '';
             if (dim) dim.style.opacity = (0.78 * qe).toFixed(3);
+            stage.style.opacity = q > 0 ? (1 - seg(q, 0.35, 1)).toFixed(3) : '';
+
+            // The coin field: near coins travel far, distant ones barely move; the cursor shifts them by depth too
+            for (let i = 0; i < coins.length; i++) {
+                const k = coins[i];
+                // they rise with the scroll and wrap around the screen height, fading at the edges, so they stay in the margins
+                const H = vh + 260, base = k.y0 / 100 * vh;
+                let yy = base - (p * vh * 0.95 * k.d) - q * vh * 0.35 * k.d - tiltX * k.d * 30;
+                yy = (((yy + 130) % H) + H) % H - 130;
+                const edge = Math.min(yy + 130, vh + 130 - yy) / 150;
+                const x = -tiltY * k.d * 48 + Math.cos(p * 5 + k.ph) * 12 * k.d;
+                k.el.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + (yy - base).toFixed(1) + 'px,0)';
+                k.el.style.opacity = (0.95 * clamp01(edge)).toFixed(3);
+            }
 
             // Which step?
             let idx = -1;
@@ -142,13 +157,14 @@
 
         function clearStyles() {
             [stage, copy, panel, brand, wrap, device, tCopy, rail, dim, glow].forEach(el => el && el.removeAttribute('style'));
+            coins.forEach(k => k.el.removeAttribute('style'));
             hero.style.removeProperty('--cine-scroll');
         }
         function tick() {
             raf = null;
             const d = target - shown;
             if (Math.abs(d) < 0.0004) { shown = target; apply(shown); return; }
-            shown += d * 0.16;                  // soft scrub, like a short lag
+            shown += d * (window.__lenis ? 0.34 : 0.16);     // a short lag; inertia scroll already smooths the input
             apply(shown);
             raf = requestAnimationFrame(tick);
         }
@@ -183,7 +199,8 @@
         function go(i) {
             if (active) {
                 const y = heroTop() + stepProgress(i) * vh * SCROLL_VH;
-                window.scrollTo({ top: y, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+                if (window.__lenis) window.__lenis.scrollTo(y, { duration: 1.6 });
+                else window.scrollTo({ top: y, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
             } else {
                 setStep(i);
             }
@@ -412,6 +429,31 @@
 
     // Hero headline: typed in, character by character, with a gold caret.
     // Everything under it waits until it lands. Reduced motion (and no JS) just shows the text.
+    // Intro: the practice balance counts up to $10,000, then the screen lifts away (once per visit).
+    // Everything underneath is already in the page; this only waits for the headline to start typing.
+    function initLoader() {
+        const el = document.getElementById('loader'), val = document.getElementById('loader-v');
+        const finish = () => {
+            if (window.__investoReady) return;
+            window.__investoReady = true;
+            root.classList.remove('loading');
+            try { sessionStorage.setItem('investo-seen', '1'); } catch (e) {}
+            if (el) setTimeout(() => el.remove(), 1100);
+            document.dispatchEvent(new Event('investo:ready'));
+        };
+        const root = document.documentElement;
+        if (!el || !val || !root.classList.contains('loading')) { if (el) el.remove(); finish(); return; }
+        const t0 = performance.now(), D = 1250;
+        const fmt = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        (function step(now) {
+            const p = clamp01((now - t0) / D);
+            val.textContent = fmt(10000 * easeOutQuart(p));
+            if (p < 1) requestAnimationFrame(step);
+            else { el.classList.add('is-out'); setTimeout(finish, 380); }
+        })(t0);
+        setTimeout(finish, 4500);          // never leave the page behind a curtain
+    }
+
     function initHeroType() {
         const root = document.documentElement;
         const title = document.getElementById('hero-heading');
@@ -475,7 +517,8 @@
         // Wait for the display face so wrapping is final before anything is typed
         let started = false;
         const go = () => { if (!started) { started = true; start(); } };
-        if (document.fonts && document.fonts.ready) { document.fonts.ready.then(go); setTimeout(go, 1200); } else go();
+        const whenReady = fn => { if (window.__investoReady) fn(); else document.addEventListener('investo:ready', fn, { once: true }); };
+        if (document.fonts && document.fonts.ready) { document.fonts.ready.then(() => whenReady(go)); setTimeout(() => whenReady(go), 1200); } else whenReady(go);
     }
 
     // Pinned scenes. Two sections hold the screen while the scroll position drives them:
@@ -490,7 +533,8 @@
         const story = document.getElementById('practice');
         if (!(pan && track) && !story) return;
         const mq = window.matchMedia('(min-width: 1024px) and (min-height: 640px)');
-        let on = false, queued = false, panDist = 0, lastBeat = 0;
+        let on = false, queued = false, panDist = 0, lastBeat = 0, lastMood = 0;
+        const panels = track ? Array.prototype.slice.call(track.querySelectorAll('.topic-panel, .pan-figures')) : [];
 
         // The line and its fill are revealed left to right by the same x clip, so they cannot drift apart.
         // A small pen dot rides the tip: read the line's own vertices once to know how high the tip is at any x.
@@ -528,6 +572,13 @@
                 const p = progress(pan);
                 track.style.transform = 'translate3d(' + (-p * panDist).toFixed(1) + 'px,0,0)';
                 if (fill) fill.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+                const vw = window.innerWidth;
+                for (let i = 0; i < panels.length; i++) {
+                    const el = panels[i];
+                    const cx = el.offsetLeft + el.offsetWidth / 2 - p * panDist;
+                    const o = Math.max(-1.6, Math.min(1.6, (cx - vw / 2) / (vw * 0.55)));
+                    if (Math.abs(o - (el._o === undefined ? 9 : el._o)) > 0.002) { el._o = o; el.style.setProperty('--o', o.toFixed(3)); }
+                }
             }
             if (story) {
                 const d = seg(progress(story), 0.05, 0.92);
@@ -535,6 +586,9 @@
                 story.style.setProperty('--peny', yAt(d).toFixed(4));
                 const beat = d < 0.28 ? 1 : d < 0.58 ? 2 : d < 0.86 ? 3 : 4;
                 if (beat !== lastBeat) { lastBeat = beat; story.setAttribute('data-beat', String(beat)); }
+                const sr = story.getBoundingClientRect();
+                const mood = (sr.top <= 0 && sr.bottom >= window.innerHeight) ? (beat === 2 ? -1 : beat === 3 ? 0.35 : beat === 4 ? 1 : 0) : 0;
+                if (mood !== lastMood) { lastMood = mood; document.dispatchEvent(new CustomEvent('investo:mood', { detail: mood })); }
             }
         }
         function update() {
@@ -545,6 +599,7 @@
             if (on) { measure(); return; }
             if (pan) pan.style.height = '';
             if (track) track.style.transform = '';
+            panels.forEach(el => { el.style.removeProperty('--o'); el._o = undefined; });
             if (story) { story.style.removeProperty('--draw'); story.style.removeProperty('--peny'); story.setAttribute('data-beat', '1'); lastBeat = 0; }
         }
         update();
@@ -760,6 +815,7 @@
 
     // ---- Init ----
     function init() {
+        initLoader();
         initHeroType();
         initNav();
         initSplitHeadings();

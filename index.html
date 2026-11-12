@@ -49,7 +49,10 @@
             var r = document.documentElement;
             r.className = r.className.replace('no-js', 'js');
             // The headline types itself in; mark it before first paint so the finished text never flashes
-            if (!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) r.className += ' typing';
+            var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!calm) r.className += ' typing';
+            var seen = false; try { seen = !!sessionStorage.getItem('investo-seen'); } catch (e) {}
+            if (!calm && !seen) r.className += ' loading';
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -90,6 +93,16 @@
             <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
         </defs>
     </svg>
+
+    <canvas class="bg-canvas" id="bg" aria-hidden="true"></canvas>
+
+    <!-- A short intro: the practice balance counts up, then lifts away (once per visit) -->
+    <div class="loader" id="loader" aria-hidden="true">
+        <div class="loader-inner">
+            <p class="loader-n">$<span id="loader-v">0</span></p>
+            <p class="loader-t">Starting balance</p>
+        </div>
+    </div>
 
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
@@ -168,6 +181,7 @@
                 <div class="stage-panel" id="stage-panel" aria-hidden="true"><i class="stage-sheen"></i></div>
 
                 <div class="tour" id="tour">
+                    <div class="fcoins" aria-hidden="true"><i class="fcoin" style="--x:4%;--y:78%;--s:118px;--b:2.2px;--t:11s;--tilt:22deg" data-y="78" data-d="1.5" data-ph="0"><i class="fc"><i class="b" style="--k:-4"></i><i class="" style="--k:-3"></i><i class="" style="--k:-2"></i><i class="" style="--k:-1"></i><i class="" style="--k:0"></i><i class="" style="--k:1"></i><i class="" style="--k:2"></i><i class="" style="--k:3"></i><i class="f" style="--k:4"></i></i></i><i class="fcoin" style="--x:9%;--y:22%;--s:46px;--b:0.9px;--t:8s;--tilt:-16deg" data-y="22" data-d="0.5" data-ph="1.3"><i class="fc"><i class="b" style="--k:-4"></i><i class="" style="--k:-3"></i><i class="" style="--k:-2"></i><i class="" style="--k:-1"></i><i class="" style="--k:0"></i><i class="" style="--k:1"></i><i class="" style="--k:2"></i><i class="" style="--k:3"></i><i class="f" style="--k:4"></i></i></i><i class="fcoin" style="--x:3%;--y:50%;--s:74px;--b:1.4px;--t:10s;--tilt:-26deg" data-y="50" data-d="0.9" data-ph="2.4"><i class="fc"><i class="b" style="--k:-4"></i><i class="" style="--k:-3"></i><i class="" style="--k:-2"></i><i class="" style="--k:-1"></i><i class="" style="--k:0"></i><i class="" style="--k:1"></i><i class="" style="--k:2"></i><i class="" style="--k:3"></i><i class="f" style="--k:4"></i></i></i><i class="fcoin" style="--x:10%;--y:92%;--s:34px;--b:0.6px;--t:6s;--tilt:18deg" data-y="92" data-d="0.35" data-ph="2.9"><i class="fc"><i class="b" style="--k:-4"></i><i class="" style="--k:-3"></i><i class="" style="--k:-2"></i><i class="" style="--k:-1"></i><i class="" style="--k:0"></i><i class="" style="--k:1"></i><i class="" style="--k:2"></i><i class="" style="--k:3"></i><i class="f" style="--k:4"></i></i></i><i class="fcoin" style="--x:95%;--y:20%;--s:138px;--b:3.2px;--t:13s;--tilt:28deg" data-y="20" data-d="1.7" data-ph="2.1"><i class="fc"><i class="b" style="--k:-4"></i><i class="" style="--k:-3"></i><i class="" style="--k:-2"></i><i class="" style="--k:-1"></i><i class="" style="--k:0"></i><i class="" style="--k:1"></i><i class="" style="--k:2"></i><i class="" style="--k:3"></i><i class="f" style="--k:4"></i></i></i><i class="fcoin" style="--x:92%;--y:62%;--s:54px;--b:0.8px;--t:7s;--tilt:-24deg" data-y="62" data-d="0.55" data-ph="0.6"><i class="fc"><i class="b" style="--k:-4"></i><i class="" style="--k:-3"></i><i class="" style="--k:-2"></i><i class="" style="--k:-1"></i><i class="" style="--k:0"></i><i class="" style="--k:1"></i><i class="" style="--k:2"></i><i class="" style="--k:3"></i><i class="f" style="--k:4"></i></i></i><i class="fcoin" style="--x:97%;--y:44%;--s:32px;--b:0.6px;--t:7s;--tilt:14deg" data-y="44" data-d="0.35" data-ph="3.4"><i class="fc"><i class="b" style="--k:-4"></i><i class="" style="--k:-3"></i><i class="" style="--k:-2"></i><i class="" style="--k:-1"></i><i class="" style="--k:0"></i><i class="" style="--k:1"></i><i class="" style="--k:2"></i><i class="" style="--k:3"></i><i class="f" style="--k:4"></i></i></i><i class="fcoin" style="--x:96%;--y:86%;--s:92px;--b:2.6px;--t:12s;--tilt:26deg" data-y="86" data-d="1.3" data-ph="0.9"><i class="fc"><i class="b" style="--k:-4"></i><i class="" style="--k:-3"></i><i class="" style="--k:-2"></i><i class="" style="--k:-1"></i><i class="" style="--k:0"></i><i class="" style="--k:1"></i><i class="" style="--k:2"></i><i class="" style="--k:3"></i><i class="f" style="--k:4"></i></i></i></div>
                     <p class="stage-brand" id="stage-brand" aria-hidden="true">investo.</p>
                     <div class="tour-rail" id="tour-rail" role="tablist" aria-label="Inside the app">
                         <button type="button" class="tab is-active" role="tab" id="tab-0" aria-selected="true" aria-controls="step-0" data-step="0">Lessons</button>
@@ -326,7 +340,7 @@
         </section>
 
         <!-- ========== LESSONS: a pinned horizontal reel ========== -->
-        <section class="pan" id="inside" aria-labelledby="inside-h">
+        <section class="pan" id="inside" aria-labelledby="inside-h" data-vel>
             <div class="pan-pin">
                 <div class="pan-track" id="pan-track">
                     <div class="pan-intro">
@@ -404,7 +418,7 @@
                     <svg class="ss-fill" viewBox="0 0 1200 400" preserveAspectRatio="none"><defs><linearGradient id="ss-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C8A84B" stop-opacity="0.26"/><stop offset="100%" stop-color="#C8A84B" stop-opacity="0"/></linearGradient></defs><path d="M0,263.2 L66,241.6 L132,274 L198,212.8 L264,227.2 L330,162.4 L396,191.2 L462,256 L528,313.6 L594,234.4 L660,248.8 L726,169.6 L792,140.8 L858,184 L924,119.2 L990,133.6 L1056,68.8 L1122,90.4 L1200,40 L1200,400 L0,400 Z" fill="url(#ss-fill)"/></svg>
                     <svg class="ss-linesvg" viewBox="0 0 1200 400" preserveAspectRatio="none"><path class="ss-line" vector-effect="non-scaling-stroke" d="M0,263.2 L66,241.6 L132,274 L198,212.8 L264,227.2 L330,162.4 L396,191.2 L462,256 L528,313.6 L594,234.4 L660,248.8 L726,169.6 L792,140.8 L858,184 L924,119.2 L990,133.6 L1056,68.8 L1122,90.4 L1200,40"/></svg>
                     <i class="ss-mark ss-mark--dip" style="left:44%; top:78.4%"><b>the dip</b></i>
-                    <i class="ss-pen"></i>
+                    <div class="ss-pen"><div class="coin"><i class="b" style="--k:-6"></i><i class="" style="--k:-5"></i><i class="" style="--k:-4"></i><i class="" style="--k:-3"></i><i class="" style="--k:-2"></i><i class="" style="--k:-1"></i><i class="" style="--k:0"></i><i class="" style="--k:1"></i><i class="" style="--k:2"></i><i class="" style="--k:3"></i><i class="" style="--k:4"></i><i class="" style="--k:5"></i><i class="f" style="--k:6"></i></div></div>
                     <i class="ss-mark ss-mark--end" style="left:100%; top:10%"></i>
                 </div>
                 <p class="ss-note">Illustrative example, not a real portfolio.</p>
@@ -420,7 +434,7 @@
                     <p class="lede">Three questions like the ones in the app, with the reasoning explained either way. Daily Challenges are on iOS today, and this is the same idea.</p>
                 </div>
 
-                <div class="quiz reveal" id="quiz" data-total="3">
+                <div class="quiz reveal" id="quiz" data-total="3" data-tilt>
                     <div class="quiz-top">
                         <span class="quiz-tag">Daily Challenge</span>
                         <span class="quiz-xp" id="quiz-xp" aria-live="polite">0 XP</span>
@@ -487,7 +501,7 @@
                     <p class="story-six" aria-hidden="true" data-px="60">6<sup>th</sup></p>
                     <div class="story-copy">
                         <h2 class="h2" id="story-h">Built by two students who lived the problem.</h2>
-                        <p class="lede">investo. wasn&rsquo;t designed by a company guessing what teenagers need. It was built by two of us who were those teenagers. We wrote the business plan ourselves, and it placed 6th in the world at DECA&rsquo;s International Career Development Conference. That&rsquo;s lived experience with the problem, independently judged, not a feature anyone can copy overnight.</p>
+                        <p class="lede" data-fill>investo. wasn&rsquo;t designed by a company guessing what teenagers need. It was built by two of us who were those teenagers. We wrote the business plan ourselves, and it placed 6th in the world at DECA&rsquo;s International Career Development Conference. That&rsquo;s lived experience with the problem, independently judged, not a feature anyone can copy overnight.</p>
                         <p class="signoff">Kanishk Sasikumar and Arjun Kapoor, founders</p>
                         <p class="stamp-t"><b>Independent Business Plan</b><span>DECA ICDC (International Career Development Conference), 2026</span></p>
                     </div>
@@ -643,6 +657,8 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
     <script src="script.js"></script>
+    <script src="fx.js"></script>
 </body>
 </html>

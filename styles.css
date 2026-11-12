@@ -51,6 +51,9 @@
     --section-pad: clamp(88px, 10.5vw, 148px);
     --nav-h:       68px;
     --radius:      20px;
+    --scrim:       #07130C;
+    --scrim-2:     #0A1A10;
+    --scrim-hero:  #07130C;
 
     --ease:      cubic-bezier(0.22, 1, 0.36, 1);
     --ease-io:   cubic-bezier(0.65, 0, 0.35, 1);
@@ -221,7 +224,7 @@ svg.i, .i {
 /* ---------- 4. Hero + product tour ----------
    Base rules = a plain stack (phones, tablets, reduced motion, no JS): headline, tabs, step copy, phone.
    html.cine (set by script.js on large screens) pins the stage and lets the scroll position drive it. */
-.hero { position: relative; z-index: 1; background: var(--bg); overflow-x: clip; }
+.hero { position: relative; z-index: 1; background: var(--scrim-hero); overflow-x: clip; }
 .stage { position: relative; }
 .stage-glow, .stage-panel { display: none; }
 
@@ -358,9 +361,9 @@ html.cine .stage-panel {
     --solid: 0;
     display: block; position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; overflow: clip;
     background: radial-gradient(95% 105% at 64% 46%,
-        rgb(29 76 35 / calc(0.62 + 0.38 * var(--solid))) 0%,
-        rgb(18 48 25 / calc(0.7 + 0.3 * var(--solid))) 46%,
-        rgb(10 27 14 / calc(0.78 + 0.22 * var(--solid))) 100%);
+        rgb(29 76 35 / calc(0.58 + 0.28 * var(--solid))) 0%,
+        rgb(18 48 25 / calc(0.64 + 0.24 * var(--solid))) 46%,
+        rgb(10 27 14 / calc(0.72 + 0.18 * var(--solid))) 100%);
     -webkit-backdrop-filter: blur(calc(14px * (1 - var(--solid)))) saturate(1.3); backdrop-filter: blur(calc(14px * (1 - var(--solid)))) saturate(1.3);
     border-radius: 48px; transform: translate3d(0, 100vh, 0);
     box-shadow: inset 0 1px 1px rgba(236, 234, 211, 0.24), inset 0 -2px 6px rgba(0, 0, 0, 0.55), 0 -50px 120px rgba(0, 0, 0, 0.5);
@@ -604,7 +607,7 @@ html.cine .step-title { font-size: clamp(36px, 3.8vw, 62px); }
 /* ---------- 6. Lessons: a pinned horizontal reel ----------
    Base = a swipeable row (phones, tablets, reduced motion, no JS).
    html.scenes (script.js, large screens) pins it and turns the scroll position into sideways travel. */
-.pan { position: relative; z-index: 3; background: var(--bg-2); }
+.pan { position: relative; z-index: 3; background: var(--scrim-2); }
 .pan-pin { position: relative; overflow: hidden; }
 .pan-track {
     display: flex; align-items: stretch; gap: 0;
@@ -656,7 +659,7 @@ html.scenes .pan-progress i { display: block; height: 100%; background: var(--go
 /* ---------- 7. Practice: a scroll-scrubbed story ----------
    Base = headline, the four beats as a list, the finished chart. html.scenes pins the scene and the
    scroll position draws the chart; each beat takes over as the line reaches its moment. */
-.scene { position: relative; z-index: 2; background: var(--bg); --draw: 1; }
+.scene { position: relative; z-index: 2; background: var(--scrim); --draw: 1; }
 .ss-pin { position: relative; display: flex; flex-direction: column; gap: 28px; padding: var(--section-pad) var(--gutter) clamp(56px, 8vw, 96px); max-width: var(--wrap); margin: 0 auto; }
 .ss-head .h2 { max-width: 12em; }
 .ss-balance { order: 2; }
@@ -694,7 +697,7 @@ html.scenes .ss-chart { position: absolute; left: 0; right: var(--edge); bottom:
 html.scenes .ss-note { position: absolute; left: var(--edge); bottom: 20px; }
 
 /* ---------- 8. Try it + families ---------- */
-.try { background: var(--bg); }
+.try { background: var(--scrim); }
 .try-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(40px, 7vw, 120px); align-items: center; }
 .try-head { position: relative; }
 .try-pig { width: clamp(120px, 15vw, 210px); height: auto; margin-bottom: 28px; transform-origin: 50% 100%; }
@@ -742,7 +745,7 @@ html.scenes .ss-note { position: absolute; left: var(--edge); bottom: 20px; }
 .quiz-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
 .quiz-body[hidden], .quiz-done[hidden] { display: none; }
 
-.families { background: var(--bg-2); border-block: 1px solid var(--line); }
+.families { background: var(--scrim-2); border-block: 1px solid var(--line); }
 .families-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(40px, 8vw, 140px); align-items: start; }
 .families-head { position: sticky; top: calc(var(--nav-h) + 48px); }
 .families-head .h2 { font-size: clamp(38px, 4.6vw, 70px); max-width: 11em; }
@@ -758,7 +761,7 @@ html.scenes .ss-note { position: absolute; left: var(--edge); bottom: 20px; }
 .trust-item a:hover { color: var(--gold-2); border-color: var(--gold-2); }
 
 /* ---------- 9. Story + press ---------- */
-.story { background: var(--bg); overflow: hidden; }
+.story { background: var(--scrim); overflow: hidden; }
 .story-grid { position: relative; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(32px, 6vw, 96px); align-items: center; }
 .story-six {
     font-family: var(--font-display); font-weight: 800; font-stretch: 85%; line-height: .74; letter-spacing: -0.05em;
@@ -786,7 +789,7 @@ html.scenes .ss-note { position: absolute; left: var(--edge); bottom: 20px; }
 .press-row:focus-visible { outline-offset: -3px; }
 
 /* ---------- 10. FAQ: every answer open ---------- */
-.faq { background: var(--bg-2); border-top: 1px solid var(--line); }
+.faq { background: var(--scrim-2); border-top: 1px solid var(--line); }
 .faq .h2 { font-size: clamp(38px, 4.6vw, 70px); max-width: 12em; }
 .qa-list { margin-top: clamp(40px, 6vw, 80px); columns: 2; column-gap: clamp(32px, 6vw, 96px); }
 .qa { break-inside: avoid; padding: 0 0 clamp(32px, 4vw, 52px); }
@@ -943,3 +946,95 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
     .store-btn-text small { font-size: 8.5px; }
     .store-btn-text strong, .footer .store-btn-text strong { font-size: 15px; }
 }
+
+/* ---------- 13. The living theme ----------
+   A WebGL field of engraved guilloche lines (fx.js) sits behind the whole page, the same engraving printed
+   on banknotes. Sections are tinted veils over it, and the glass panels refract it. */
+html.has-bg { --scrim: rgba(3, 10, 6, 0.46); --scrim-2: rgba(3, 10, 6, 0.58); --scrim-hero: transparent; }
+html.has-bg .footer { background: rgba(3, 8, 5, 0.7); }
+.bg-canvas { position: fixed; inset: 0; z-index: -1; display: block; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 1.4s ease; }
+.bg-canvas.is-live { opacity: 1; }
+
+/* Inertia scroll (Lenis) */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: clip; }
+
+/* Intro: the balance counts up, then the screen lifts away */
+.loader { display: none; position: fixed; inset: 0; z-index: 3000; place-items: center; background: #040b06; will-change: transform;
+    transition: transform 1s cubic-bezier(.76, 0, .24, 1), border-radius 1s cubic-bezier(.76, 0, .24, 1); }
+html.loading .loader, .loader.is-out { display: grid; }
+html.loading { overflow: hidden; }
+.loader.is-out { transform: translateY(-101%); border-radius: 0 0 50% 50% / 0 0 18vh 18vh; }
+.loader-inner { text-align: center; }
+.loader-n { font-family: var(--font-display); font-weight: 800; font-stretch: 88%; font-size: clamp(64px, 17vw, 240px); line-height: .9; letter-spacing: -0.02em; color: var(--cream); font-variant-numeric: lining-nums tabular-nums; }
+.loader-t { margin-top: 16px; font-size: 15px; font-weight: 500; color: var(--text-3); }
+
+/* Lessons reel: real glass over the engraving; each panel turns toward you as it crosses the screen and its parts travel at their own rates */
+.pan-track { gap: 14px; }
+.topic-panel, .pan-figures {
+    border: 1px solid var(--glass-edge); border-radius: 28px;
+    background: var(--glass); box-shadow: var(--glass-shadow);
+    -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+}
+html.scenes .pan-track { gap: 22px; }
+html.scenes .topic-panel, html.scenes .pan-figures {
+    transform: perspective(1600px) translateZ(calc(var(--o, 0) * var(--o, 0) * -90px)) rotateY(calc(var(--o, 0) * -21deg));
+    will-change: transform;
+}
+html.scenes .tp-art { translate: calc(var(--o, 0) * -90px) calc(var(--o, 0) * 14px); rotate: calc(var(--o, 0) * -9deg); }
+html.scenes .tp-name { translate: calc(var(--o, 0) * 46px) 0; transform: skewX(calc(var(--vel, 0) * -8deg)); transform-origin: 0 100%; }
+html.scenes .tp-line { translate: calc(var(--o, 0) * 78px) 0; }
+html.scenes .pan-intro .h2 { transform: skewX(calc(var(--vel, 0) * -6deg)); transform-origin: 0 100%; }
+
+/* Scrubbed text: words light up as you read down the paragraph */
+.fw { opacity: clamp(.2, calc(var(--p, 1) * (var(--n, 1) + 8) - var(--i, 0)), 1); }
+
+/* The coin that rides the tip of the chart. A stack of gold slices, spun by the scroll position. */
+.ss-pen { position: absolute; left: calc(var(--draw) * 100%); top: calc(var(--peny, .1) * 100%); width: 0; height: 0; z-index: 3; pointer-events: none;
+    opacity: clamp(0, calc((var(--draw) - .004) * 200), 1); }
+.coin { --s: clamp(54px, 5.4vw, 78px); position: absolute; left: calc(var(--s) / -2); top: calc(var(--s) / -2); width: var(--s); height: var(--s);
+    transform-style: preserve-3d; transform: perspective(700px) rotateX(-14deg) rotateY(calc(var(--draw) * 1440deg));
+    filter: drop-shadow(0 14px 22px rgba(0, 0, 0, .55)); }
+.coin i, .fc i { position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center; transform: translateZ(calc(var(--k) * var(--s) * .026));
+    background: radial-gradient(circle at 34% 28%, #F8E39A 0, #D9B857 38%, #A07C24 100%); }
+.coin i:nth-child(odd), .fc i:nth-child(odd) { background: radial-gradient(circle at 34% 28%, #E7CB78 0, #BE9A3A 40%, #8A6A1C 100%); }
+.coin i.f, .coin i.b, .fc i.f, .fc i.b { box-shadow: inset 0 0 0 .09em rgba(139, 100, 18, .55), inset 0 0 0 .15em rgba(255, 240, 176, .55); }
+.coin i.f::after, .coin i.b::after, .fc i.f::after, .fc i.b::after { content: '$'; font-family: var(--font-display); font-weight: 800; font-size: calc(var(--s) * .56); line-height: 1; color: #7A5A12; text-shadow: 0 1px 0 rgba(255, 244, 190, .7); }
+.coin i.b, .fc i.b { transform: translateZ(calc(var(--k) * var(--s) * .026)) rotateY(180deg); }
+html:not(.scenes) .ss-pen { display: none; }
+
+/* The phone's screens assemble out of depth and fall back into it, piece by piece */
+.screen { perspective: 72em; perspective-origin: 50% 35%; transform: none; }
+.screen > * {
+    opacity: 0; transform: translate3d(0, 2.6em, -64em) rotateX(26deg);
+    transition: transform .95s var(--ease), opacity .45s ease; transition-delay: calc(var(--d, 0) * 1ms);
+}
+.device[data-screen="home"] .screen--home > *, .device[data-screen="learn"] .screen--learn > *,
+.device[data-screen="ai"] .screen--ai > *, .device[data-screen="bank"] .screen--bank > * {
+    opacity: 1; transform: none; transition-delay: calc(160ms + var(--d, 0) * 1ms);
+}
+.screen > :nth-child(1) { --d: 0; } .screen > :nth-child(2) { --d: 75; } .screen > :nth-child(3) { --d: 150; }
+.screen > :nth-child(4) { --d: 225; } .screen > :nth-child(5) { --d: 300; } .screen > :nth-child(6) { --d: 375; }
+.screen > :nth-child(7) { --d: 450; } .screen > :nth-child(8) { --d: 525; }
+.ai-input { transition-property: transform, opacity; }
+
+@media (prefers-reduced-motion: reduce) {
+    .screen > * { transform: none; transition-duration: .01ms !important; }
+}
+
+/* A field of coins at different distances: sized and blurred by depth, drifting at different rates against the scroll and the cursor */
+.fcoins { display: none; }
+html.cine .fcoins { display: block; position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.fcoin { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2); perspective: 700px; filter: blur(var(--b, 0px)); will-change: transform; }
+html.cine .fcoin { opacity: .95; animation: fcoin-in 1.4s ease 1.4s backwards; }
+@keyframes fcoin-in { from { opacity: 0; } }
+.fc { display: block; position: relative; width: 100%; height: 100%; transform-style: preserve-3d; animation: fc-spin var(--t, 9s) linear infinite; }
+@keyframes fc-spin { from { transform: rotateX(var(--tilt, 18deg)) rotateY(0deg); } to { transform: rotateX(var(--tilt, 18deg)) rotateY(360deg); } }
+@media (prefers-reduced-motion: reduce) { .fc { animation: none; transform: rotateX(var(--tilt, 18deg)) rotateY(24deg); } }
+
+/* The quiz card turns toward the cursor, with a glare that follows it */
+.quiz[data-tilt] { transform: perspective(1400px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: opacity .9s var(--ease); will-change: transform; }
+.quiz[data-tilt]::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .35s ease;
+    background: radial-gradient(520px circle at var(--gx, 70%) var(--gy, 0%), rgba(255, 255, 255, .5), transparent 55%); mix-blend-mode: soft-light; }
+@media (hover: hover) and (pointer: fine) { .quiz[data-tilt]:hover::after { opacity: 1; } }
