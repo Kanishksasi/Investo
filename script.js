@@ -37,6 +37,7 @@
         const tCopy  = document.getElementById('tour-copy');
         const rail   = document.getElementById('tour-rail');
         const dim    = document.getElementById('stage-dim');
+        const glow   = stage.querySelector('.stage-glow');
         const tabs   = Array.prototype.slice.call(document.querySelectorAll('#tour-rail .tab'));
         const steps  = Array.prototype.slice.call(document.querySelectorAll('#tour-copy .step'));
         if (!copy || !panel || !brand || !wrap || !device || !tCopy || !rail || !tabs.length) return;
@@ -101,11 +102,17 @@
             // Phone: from the hero's right-hand side to the stage's centre
             const m = seg(p, 0.03, 0.26, easeInOutCubic);
             const x = lerp(0.2 * vw, 0.09 * vw, m);
-            const y = lerp(0.06 * vh, 0, m) - 0.1 * vh * exit - 0.12 * vh * easeInOutCubic(q);
+            // While the tour plays, every layer travels at its own rate: the phone turns and bobs,
+            // the copy rises, the rail sinks, the wordmark slides, the glow lags behind
+            const walk = seg(p, STEP_START - 0.02, OUT_START);
+            const sway = Math.sin(walk * Math.PI * 2) * 6 * (1 - exit);
+            const bob  = Math.sin(walk * Math.PI * 3) * 0.012 * vh * (1 - exit);
+            const drift = 0.5 - walk;
+            const y = lerp(0.06 * vh, 0, m) - 0.1 * vh * exit - 0.12 * vh * easeInOutCubic(q) + bob;
             const sc = 1 - 0.06 * exit - 0.05 * q;         // never scaled up: keeps the UI crisp
             wrap.style.transform = 'translate3d(calc(-50% + ' + x.toFixed(1) + 'px), calc(-50% + ' + y.toFixed(1) + 'px),0) scale(' + sc.toFixed(4) + ')';
             wrap.style.opacity = q > 0 ? (1 - 0.7 * q).toFixed(3) : '';
-            const ry = lerp(-17, 0, m) + tiltY * 7, rx = lerp(6, 0, m) - tiltX * 5, rz = lerp(2.2, 0, m);
+            const ry = lerp(-17, 0, m) + tiltY * 7 + sway, rx = lerp(6, 0, m) - tiltX * 5, rz = lerp(2.2, 0, m);
             device.style.transform = 'rotateY(' + ry.toFixed(2) + 'deg) rotateX(' + rx.toFixed(2) + 'deg) rotateZ(' + rz.toFixed(2) + 'deg)';
             device.style.setProperty('--glint', (50 + ry * 2).toFixed(1) + '%');
 
@@ -113,11 +120,12 @@
             const ui = seg(p, 0.24, 0.3, easeOutQuart) * (1 - exit);
             const bc = seg(p, 0.24, 0.36, easeOutQuart) * (1 - exit);
             brand.style.opacity = bc.toFixed(3);
-            brand.style.transform = 'translateX(' + (50 * (1 - bc)).toFixed(1) + 'px) scale(' + (0.8 + 0.2 * bc).toFixed(4) + ')';
+            if (glow) glow.style.transform = 'translate3d(' + (drift * 70 - tiltY * 36).toFixed(1) + 'px,' + (-tiltX * 22 + q * -0.06 * vh).toFixed(1) + 'px,0)';
+            brand.style.transform = 'translateX(' + (50 * (1 - bc) + drift * 110 - tiltY * 28).toFixed(1) + 'px) scale(' + (0.8 + 0.2 * bc).toFixed(4) + ')';
             tCopy.style.opacity = ui.toFixed(3);
-            tCopy.style.transform = 'translate3d(' + (-28 * (1 - ui)).toFixed(1) + 'px,-50%,0)';
+            tCopy.style.transform = 'translate3d(' + (-28 * (1 - ui)).toFixed(1) + 'px,calc(-50% + ' + (drift * 80).toFixed(1) + 'px),0)';
             rail.style.opacity = ui.toFixed(3);
-            rail.style.transform = 'translate3d(' + (28 * (1 - ui)).toFixed(1) + 'px,-50%,0)';
+            rail.style.transform = 'translate3d(' + (28 * (1 - ui)).toFixed(1) + 'px,calc(-50% + ' + (-drift * 56).toFixed(1) + 'px),0)';
             tCopy.style.pointerEvents = rail.style.pointerEvents = ui < 0.5 ? 'none' : '';
 
             // The next section rises over the stage: it settles back, rounds off and dims beneath
@@ -133,7 +141,7 @@
         }
 
         function clearStyles() {
-            [stage, copy, panel, brand, wrap, device, tCopy, rail, dim].forEach(el => el && el.removeAttribute('style'));
+            [stage, copy, panel, brand, wrap, device, tCopy, rail, dim, glow].forEach(el => el && el.removeAttribute('style'));
             hero.style.removeProperty('--cine-scroll');
         }
         function tick() {
@@ -470,25 +478,63 @@
         if (document.fonts && document.fonts.ready) { document.fonts.ready.then(go); setTimeout(go, 1200); } else go();
     }
 
-    // Slow, gentle drift: the practice card and the 6th-place number move a touch against the scroll
-    function initDrift() {
-        if (reduceMotion.matches || !finePointer.matches && window.innerWidth < 1024) return;
-        const items = Array.prototype.slice.call(document.querySelectorAll('[data-drift]'));
-        if (!items.length) return;
-        let queued = false;
+    // Parallax. Layers travel at different rates, so the page has depth:
+    //   [data-px="n"]   n px of extra travel across the screen (positive = faster than the page,
+    //                   negative = slower). Zero at the middle of the screen, so nothing is ever off-grid there.
+    //   .sheet          the section beneath a rising sheet lags, sinks and dims as it is covered.
+    //   #pf-card        the practice chart is drawn by the scroll position (--draw).
+    // Parallax is desktop only and never runs with reduced motion; the chart scrub runs everywhere
+    // that allows motion. Everything uses the `translate` property, so it never fights a transform.
+    function initParallax() {
+        const wide = window.matchMedia('(min-width: 1024px)');
+        const items = Array.prototype.slice.call(document.querySelectorAll('[data-px]'));
+        const sheets = Array.prototype.slice.call(document.querySelectorAll('.sheet'))
+            .map(sec => ({ sec, under: sec.previousElementSibling && sec.previousElementSibling.querySelector('.wrap') }))
+            .filter(o => o.under);
+        const pf = document.getElementById('pf-card');
+        let pxOn = false, scrubOn = false, queued = false;
+
+        function reset() {
+            items.forEach(el => { el.style.translate = ''; el._ty = 0; });
+            sheets.forEach(o => { o.under.style.translate = ''; o.under.style.opacity = ''; });
+        }
         function paint() {
             queued = false;
             const vh = window.innerHeight;
-            items.forEach(el => {
-                const r = el.getBoundingClientRect();
-                if (r.bottom < -200 || r.top > vh + 200) return;
-                const t = (r.top + r.height / 2 - vh / 2) / vh;          // -1 … 1 around the middle of the screen
-                el.style.translate = '0 ' + (t * parseFloat(el.dataset.drift)).toFixed(1) + 'px';
-            });
+            if (pxOn) {
+                items.forEach(el => {
+                    const r = el.getBoundingClientRect();
+                    const ty = el._ty || 0;
+                    if (r.bottom - ty < -400 || r.top - ty > vh + 400) return;
+                    const t = (r.top - ty + r.height / 2 - vh / 2) / vh;       // -1 … 1 around the middle of the screen
+                    el._ty = t * parseFloat(el.dataset.px);
+                    el.style.translate = '0 ' + el._ty.toFixed(1) + 'px';
+                });
+                sheets.forEach(o => {
+                    const top = o.sec.getBoundingClientRect().top;
+                    const k = clamp01((vh - top) / vh);                         // 0 as the sheet appears … 1 once it covers the screen
+                    o.under.style.translate = '0 ' + (k * 56).toFixed(1) + 'px';
+                    o.under.style.opacity = (1 - 0.42 * k).toFixed(3);
+                });
+            }
+            if (scrubOn && pf) {
+                const d = clamp01((vh * 0.9 - (pf.getBoundingClientRect().top - (pf._ty || 0))) / (vh * 0.55));
+                pf.style.setProperty('--draw', (d * d * (3 - 2 * d)).toFixed(4));
+            }
         }
-        window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(paint); } }, { passive: true });
-        window.addEventListener('resize', paint, { passive: true });
-        paint();
+        function update() {
+            const wasPx = pxOn;
+            pxOn = wide.matches && !reduceMotion.matches;
+            scrubOn = !reduceMotion.matches;
+            if (wasPx && !pxOn) reset();
+            if (!scrubOn && pf) pf.style.removeProperty('--draw');
+            paint();
+        }
+        update();
+        onMQ(wide, update); onMQ(reduceMotion, update);
+        window.addEventListener('scroll', () => { if ((pxOn || scrubOn) && !queued) { queued = true; requestAnimationFrame(paint); } }, { passive: true });
+        window.addEventListener('resize', () => { if (pxOn || scrubOn) paint(); }, { passive: true });
+        window.addEventListener('load', paint);
     }
 
     // Glass cards: the glare follows the cursor
@@ -702,7 +748,7 @@
         initFooterReveal();
         initMagnetic();
         initBackToTop();
-        initDrift();
+        initParallax();
         initGlare();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
