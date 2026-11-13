@@ -1,353 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Privacy Policy — investo.</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy | investo.</title>
+  
+  <meta name="theme-color" content="#08100A">
   <link rel="icon" type="image/png" href="apple-touch-icon.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-    :root {
-      --forest: #27521d;
-      --forest-dark: #1c3d14;
-      --forest-deep: #183412;
-      --purple: #4f1b68;
-      --purple-deep: #3a1150;
-      --cream: #e8e7bb;
-      --gold: #c8a84b;
-      --cream-dim: rgba(232,231,187,0.82);
-      --cream-muted: rgba(232,231,187,0.7);
-      --cream-faint: rgba(232,231,187,0.08);
-      --purple-border: rgba(79,27,104,0.4);
-      --line: rgba(232,231,187,0.14);
-      --gutter: clamp(20px, 4vw, 48px);
-      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --font-display: 'Bricolage Grotesque', 'Inter', sans-serif;
-      --font-mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-    }
-
-    html { scroll-behavior: smooth; scroll-padding-top: 90px; -webkit-text-size-adjust: 100%; }
-
-    body {
-      font-family: var(--font);
-      background: var(--forest);
-      color: var(--cream);
-      line-height: 1.7;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-    }
-
-    img { display: block; max-width: 100%; }
-
-    /* ── NAV ── */
-    nav {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px 24px;
-      padding: 12px var(--gutter);
-      background: rgba(39,82,29,0.94);
-      position: sticky;
-      top: 0;
-      z-index: 200;
-      border-bottom: 1px solid var(--line);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-    }
-
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-      flex-shrink: 0;
-    }
-
-    .nav-logo img { height: 44px; width: auto; }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 28px;
-      margin-left: auto;
-      margin-right: 8px;
-    }
-
-    .nav-links a {
-      color: var(--cream-dim);
-      text-decoration: none;
-      font-size: 14.5px;
-      font-weight: 500;
-      padding: 8px 0;
-      transition: color 0.2s;
-    }
-
-    .nav-links a:hover { color: var(--cream); }
-
-    .nav-cta {
-      background: var(--gold) !important;
-      color: var(--forest-dark) !important;
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-weight: 700 !important;
-      font-size: 13px !important;
-    }
-
-    /* ── PAGE HEADER ── */
-    .page-header {
-      max-width: 820px;
-      margin: 0 auto;
-      padding: clamp(48px, 7vw, 80px) var(--gutter) 0;
-    }
-
-    .page-eyebrow {
-      font-family: var(--font-mono);
-      font-size: 11.5px;
-      font-weight: 500;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--gold);
-      background: var(--purple-deep);
-      border: 1px solid rgba(79,27,104,0.7);
-      display: inline-block;
-      padding: 6px 15px;
-      border-radius: 100px;
-      margin-bottom: 20px;
-      line-height: 1.4;
-    }
-
-    .page-header h1 {
-      font-family: var(--font-display);
-      font-size: clamp(38px, 5vw, 58px);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.04;
-      margin-bottom: 14px;
-      text-wrap: balance;
-    }
-
-    .page-header .subtitle {
-      font-size: clamp(16px, 1.3vw, 18px);
-      color: var(--cream-dim);
-    }
-
-    .page-header .updated {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      letter-spacing: 0.02em;
-      color: var(--cream-muted);
-      margin-bottom: 0;
-    }
-
-    /* ── CONTAINER ── */
-    .container {
-      max-width: 820px;
-      margin: 0 auto;
-      padding: clamp(36px, 5vw, 56px) var(--gutter) clamp(64px, 8vw, 96px);
-    }
-
-    a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
-
-    strong { color: var(--cream); font-weight: 600; }
-
-    /* ── FOOTER ── */
-    footer {
-      padding: clamp(36px, 5vw, 48px) var(--gutter);
-      border-top: 1px solid var(--line);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .footer-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .footer-logo img { height: 40px; width: auto; }
-
-    .footer-links {
-      display: flex;
-      gap: 8px 28px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .footer-links a {
-      color: var(--cream-muted);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      padding: 6px 0;
-      transition: color 0.2s;
-    }
-
-    .footer-links a:hover { color: var(--cream); }
-
-    .footer-copy { font-size: 13px; color: var(--cream-muted); text-align: center; }
-
-    /* ── MOBILE ── */
-    @media (max-width: 560px) {
-      .nav-logo img { height: 40px; }
-      /* Two links and two store badges don't fit beside the logo on a phone:
-         the links take a second row instead of disappearing. */
-      .nav-links {
-        order: 3;
-        width: 100%;
-        margin: 0;
-        gap: 24px;
-        padding-top: 10px;
-        border-top: 1px solid var(--line);
-      }
-      .nav-stores { margin-left: auto; }
-    }
-
-    /* Callout box */
-    .callout {
-      background: rgba(24,52,18,0.55);
-      border: 1px solid var(--line);
-      border-left: 3px solid var(--gold);
-      border-radius: 14px;
-      padding: 22px 26px;
-      margin-bottom: 40px;
-    }
-
-    .callout p {
-      font-family: var(--font-display);
-      font-size: clamp(17px, 1.4vw, 19px);
-      font-weight: 600;
-      color: var(--cream);
-      margin: 0;
-      line-height: 1.45;
-    }
-
-    .callout p::before {
-      content: '\2713\00a0\00a0';
-      color: var(--gold);
-      font-weight: 900;
-    }
-
-    .intro {
-      font-size: clamp(15.5px, 1.2vw, 16.5px);
-      color: var(--cream-dim);
-      margin-bottom: 44px;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 36px;
-      line-height: 1.75;
-    }
-
-    /* Section */
-    .policy-section { margin-bottom: 40px; scroll-margin-top: 90px; }
-
-    .policy-section h2 {
-      font-family: var(--font-display);
-      font-size: clamp(19px, 1.6vw, 22px);
-      font-weight: 700;
-      color: var(--cream);
-      margin-bottom: 14px;
-      letter-spacing: -0.015em;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      line-height: 1.3;
-    }
-
-    .policy-section h2::before {
-      content: attr(data-num);
-      font-family: var(--font-mono);
-      font-size: 11.5px;
-      font-weight: 500;
-      color: var(--gold);
-      background: rgba(200,168,75,0.12);
-      border: 1px solid rgba(200,168,75,0.35);
-      border-radius: 6px;
-      padding: 3px 8px;
-      letter-spacing: 0.06em;
-      line-height: 1.4;
-      flex-shrink: 0;
-    }
-
-    .policy-section p {
-      font-size: 15.5px;
-      color: var(--cream-dim);
-      margin-bottom: 14px;
-      line-height: 1.75;
-      overflow-wrap: anywhere;
-    }
-
-    .policy-section ul {
-      list-style: none;
-      padding: 0;
-      margin-bottom: 14px;
-    }
-
-    .policy-section ul li {
-      font-size: 15.5px;
-      color: var(--cream-dim);
-      padding: 10px 0 10px 20px;
-      border-bottom: 1px solid rgba(232,231,187,0.09);
-      position: relative;
-      line-height: 1.65;
-      overflow-wrap: anywhere;
-    }
-
-    .policy-section ul li:last-child { border-bottom: none; }
-
-    .policy-section ul li::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 20px;
-      width: 6px;
-      height: 6px;
-      background: var(--gold);
-      border-radius: 50%;
-    }
-
-    .policy-section a {
-      color: var(--gold);
-      text-decoration: none;
-      border-bottom: 1px solid rgba(200,168,75,0.4);
-      transition: border-color 0.2s;
-    }
-
-    .policy-section a:hover { border-color: var(--gold); }
-
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-    }
-  </style>
-  <link rel="stylesheet" href="stores.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="stores.css">
+  <link rel="stylesheet" href="legal.css">
   <script src="stores.js"></script>
 </head>
-<body>
+<body class="legal">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="i-apple" viewBox="0 0 24 24"><path fill="currentColor" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path fill="#00C3FF" d="M3.61 1.81 13.79 12 3.61 22.19c-.37-.2-.61-.59-.61-1.09V2.9c0-.5.24-.89.61-1.09z"/><path fill="#00E676" d="M3.61 1.81c.36-.15.82-.12 1.29.15l12.04 6.89L13.79 12z"/><path fill="#FF3D57" d="M3.61 22.19c.36.15.82.12 1.29-.15l12.04-6.89L13.79 12z"/><path fill="#FFC400" d="m16.94 8.85 3.56 2.05c1 .57 1 1.63 0 2.2l-3.56 2.05L13.79 12z"/></symbol>
+</defs></svg>
+<a class="skip-link" href="#main">Skip to content</a>
 
-<!-- NAV -->
-<nav>
-  <a href="index.html" class="nav-logo">
-    <img src="InvestoLogo.png" alt="investo." />
-  </a>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="support.html">Support</a>
-  </div>
-  <div class="nav-stores">
-      <a href="https://apps.apple.com/us/app/investo-finance-ed/id6761702116" target="_blank" rel="noopener" class="nav-store nav-store--apple" aria-label="Download on the App Store"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg><span>App Store</span></a>
-      <a href="https://play.google.com/store/apps/details?id=com.investo.learnfinance" target="_blank" rel="noopener" class="nav-store nav-store--play" aria-label="Get it on Google Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#00C3FF" d="M3.61 1.81 13.79 12 3.61 22.19c-.37-.2-.61-.59-.61-1.09V2.9c0-.5.24-.89.61-1.09z"/><path fill="#00E676" d="M3.61 1.81c.36-.15.82-.12 1.29.15l12.04 6.89L13.79 12z"/><path fill="#FF3D57" d="M3.61 22.19c.36.15.82.12 1.29-.15l12.04-6.89L13.79 12z"/><path fill="#FFC400" d="m16.94 8.85 3.56 2.05c1 .57 1 1.63 0 2.2l-3.56 2.05L13.79 12z"/></svg><span>Google Play</span></a>
-  </div>
-</nav>
+<header class="nav is-solid" id="main-nav">
+    <div class="nav-inner">
+        <a href="index.html" class="brand" aria-label="investo. home">
+            <img src="investo-mark.webp" alt="" class="brand-mark" width="330" height="256">
+            <span class="brand-word">investo.</span>
+        </a>
+        <nav class="nav-links" aria-label="Main">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="support.html" class="nav-link">Support</a>
+            <a href="privacy.html" class="nav-link">Privacy</a>
+        </nav>
+        <div class="nav-right">
+            <div class="nav-stores">
+                <a href="https://apps.apple.com/us/app/investo-finance-ed/id6761702116" target="_blank" rel="noopener" class="nav-store nav-store--apple" aria-label="Download on the App Store"><svg aria-hidden="true"><use href="#i-apple"/></svg><span>App Store</span></a>
+                <a href="https://play.google.com/store/apps/details?id=com.investo.learnfinance" target="_blank" rel="noopener" class="nav-store nav-store--play" aria-label="Get it on Google Play"><svg aria-hidden="true"><use href="#i-play"/></svg><span>Google Play</span></a>
+            </div>
+        </div>
+    </div>
+</header>
 
-<!-- PAGE HEADER -->
 <div class="page-header">
-  <div class="page-eyebrow">Legal</div>
+  <div class="page-header-inner">
+    <div class="page-eyebrow">Legal</div>
   <h1>Privacy Policy</h1>
   <p class="updated">Last updated: September 13, 2026</p>
+  </div>
 </div>
 
-<!-- CONTENT -->
+<main id="main">
 <div class="container">
 
   <div class="callout">
@@ -388,7 +92,7 @@
     <h2 data-num="03">Third-Party Services</h2>
     <p>We use the following trusted third-party services to operate the App:</p>
     <ul>
-      <li><strong>Firebase (Google LLC):</strong> Authentication, cloud database (Firestore), file storage (avatar photos), and analytics. Firebase processes data on our behalf under Google&rsquo;s data processing terms. Learn more at <a href="https://firebase.google.com/support/privacy" target="_blank">firebase.google.com/support/privacy</a></li>
+      <li><strong>Firebase (Google LLC):</strong> Authentication, cloud database (Firestore), file storage (avatar photos), and analytics. Firebase processes data on our behalf under Google&rsquo;s data processing terms. Learn more at <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">firebase.google.com/support/privacy</a></li>
       <li><strong>Google Gemini:</strong> The AI-tutor feature sends the text of your questions to Google&rsquo;s Gemini API to generate a response. We do not attach personally identifying information to these requests.</li>
       <li><strong>Groq:</strong> Used as a fallback for the AI tutor only when Gemini is rate-limited, under the same conditions as above.</li>
       <li><strong>Resend:</strong> Delivers the parental-consent email when a user under 13 signs up. Resend receives the parent or guardian&rsquo;s email address for this purpose only.</li>
@@ -454,19 +158,22 @@
   </div>
 
 </div>
+</main>
 
-<!-- FOOTER -->
-<footer>
-  <a href="index.html" class="footer-logo">
-    <img src="InvestoLogo.png" alt="investo." />
-  </a>
-  <div class="footer-links">
-    <a href="index.html">Home</a>
-    <a href="support.html">Support</a>
-    <a href="privacy.html">Privacy Policy</a>
-    <a href="mailto:investo.team@bruxelacademy.com">Contact</a>
-  </div>
-  <p class="footer-copy">&copy; 2026 Kanishk Sasikumar &amp; Arjun Kapoor. All rights reserved.</p>
+<footer class="legal-footer">
+    <div class="legal-footer-inner">
+        <a href="index.html" class="brand" aria-label="investo. home">
+            <img src="investo-mark.webp" alt="" class="brand-mark" width="330" height="256">
+            <span class="brand-word">investo.</span>
+        </a>
+        <nav class="legal-footer-links" aria-label="Footer">
+            <a href="index.html">Home</a>
+            <a href="support.html">Support</a>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="mailto:investo.team@bruxelacademy.com">Contact</a>
+        </nav>
+        <p class="footer-copy">&copy; 2026 Kanishk Sasikumar &amp; Arjun Kapoor. All rights reserved.</p>
+    </div>
 </footer>
 
 </body>
