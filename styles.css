@@ -528,8 +528,8 @@ input[type=range]:focus-visible::-webkit-slider-thumb { outline: 2px solid var(-
 .story-cap { font-family: var(--serif); font-style: italic; font-size: clamp(20px, 2vw, 28px); letter-spacing: -.02em; color: var(--up); margin-bottom: 18px; }
 .story .h2 { max-width: 10em; }
 .story-text { margin-top: clamp(32px, 4vw, 60px); max-width: 23em; font-family: var(--serif); font-size: clamp(25px, 3.5vw, 54px); line-height: 1.16; letter-spacing: -.026em; text-wrap: pretty; }
-.sdm .story-text { animation-name: p; --a: 14; --b: 60; }
-.sdm .story-text .fw { opacity: clamp(.16, calc(var(--p) * (var(--n) + 8) - var(--i)), 1); }
+.story-text .fw { color: color-mix(in srgb, var(--ink) 62%, transparent); }
+.story-text .fw-hl { color: var(--ink); }
 @keyframes p { from { --p: 0; } to { --p: 1; } }
 .story-sign { margin-top: clamp(32px, 4vw, 56px); }
 .signoff { font-weight: 600; font-size: 17px; }

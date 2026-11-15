@@ -91,7 +91,8 @@
             const words = el.textContent.trim().split(/\s+/);
             el.setAttribute('aria-label', el.textContent.trim());
             el.style.setProperty('--n', words.length);
-            el.innerHTML = words.map((w, i) => '<span class="fw" aria-hidden="true" style="--i:' + i + '">' + w + '</span>').join(' ');
+            const hl = (el.dataset.hl || '').trim().split(/\s+/), at = el.dataset.hl ? words.findIndex((w, i) => hl.every((h, k) => words[i + k] === h)) : -1;
+            el.innerHTML = words.map((w, i) => '<span class="fw' + (at >= 0 && i >= at && i < at + hl.length ? ' fw-hl' : '') + '" aria-hidden="true" style="--i:' + i + '">' + w + '</span>').join(' ');
         });
     }
 
